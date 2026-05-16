@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +77,13 @@ fun HomeScreen(
     val fetchedPages = remember { mutableStateMapOf<Int, List<DigListItem>>() }
     var totalPages by remember { mutableStateOf(0) }
     val pagerState = rememberPagerState(pageCount = { maxOf(totalPages, 1) })
+
+    // 다른 화면(Find 등)에서 돌아왔을 때 발굴 결과를 반영하기 위해 resume마다 캐시 무효화
+    LifecycleResumeEffect(Unit) {
+        fetchedPages.clear()
+        totalPages = 0
+        onPauseOrDispose { }
+    }
 
     LaunchedEffect(pagerState.currentPage, totalPages) {
         val current = pagerState.currentPage
