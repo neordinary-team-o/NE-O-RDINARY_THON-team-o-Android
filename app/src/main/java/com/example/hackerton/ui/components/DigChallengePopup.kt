@@ -22,10 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.example.hackerton.R
 import com.example.hackerton.ui.theme.*
 
-/**
- * [DigChallengePopup]
- * 상단 타이틀을 mining_text.xml 그래픽으로 교체한 다이얼로그 팝업
- */
+// FindScreen.kt의 context를 참조하여 작성된 팝업 컴포저블
 @Composable
 fun DigChallengePopup(
     title: String,
@@ -36,141 +33,146 @@ fun DigChallengePopup(
     onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 테마에 따라 다를 수 있지만, 이미지에 기반하여 짙은 회색 배경 정의
+    // 만약 테마에 정의되어 있다면 GrayBlack 등을 사용하세요.
+    val popupBackgroundColor = GrayBlack.copy(alpha = 0.98f) // 또는 테마 색상 사용 예: Color(0xFF1C1C1E)
+
+    // 팝업 카드의 전체 컨테이너
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(Gray900)
-            .padding(horizontal = 24.dp, vertical = 28.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .wrapContentHeight()
+            .clip(RoundedCornerShape(32.dp)) // 둥근 모서리
+            .background(popupBackgroundColor) // 다크 테마 배경
+            .padding(horizontal = 24.dp, vertical = 28.dp), // 내부 패딩
+        horizontalAlignment = Alignment.CenterHorizontally // 중앙 정렬
     ) {
-        // ------------------------------------------------------------------
-        // [레이어 1] 상단 헤더: 그래픽 타이틀(mining_text) + 닫기 버튼(x_icon)
-        // ------------------------------------------------------------------
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            // 🔥 "발굴 도전!" 텍스트를 제거하고 xml 파일로 교체했습니다.
+        // [레이어 1] 헤더 영역 (제목 + 닫기 버튼)
+        Box(modifier = Modifier.fillMaxWidth()) {
             Image(
                 painter = painterResource(id = R.drawable.mining_text),
                 contentDescription = "발굴 도전!",
-                // 높이나 너비가 너무 크거나 작으면 이 height 값을 조절해 주세요 (예: 24.dp, 32.dp 등)
-                modifier = Modifier.height(20.dp)
+                contentScale = ContentScale.Fit, // 비율 깨짐 방지
+                modifier = Modifier
+                    .align(Alignment.Center) // 🔥 기존 Text처럼 Box 안에서 정중앙 정렬 유지
+                    .height(20.dp)           // 피그마 시안에 맞춰 높이 조절 (필요 시 24.dp 등으로 변경)
+                    .wrapContentWidth()
             )
 
             IconButton(
                 onClick = onCloseClick,
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(28.dp)
+                    .align(Alignment.CenterEnd) // 닫기 버튼 우측 배치
+                    .size(24.dp)
             ) {
-                // 🔥 x_icon.xml 연결 및 원본 색상 유지
                 Icon(
-                    painter = painterResource(id = R.drawable.x_icon),
+                    painter = painterResource(id = R.drawable.x_icon), // 닫기 아이콘 리소스 연결
                     contentDescription = "닫기",
-                    // Color.Unspecified를 주면 xml 파일에 정의된 원본 색상과 투명도가 그대로 렌더링됩니다.
-                    tint = Color.Unspecified
+                    tint = GrayWhite // 아이콘 색상
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp)) // 제목과 앨범 아트 사이 간격
 
-        // ------------------------------------------------------------------
-        // [레이어 2] 앨범 아트 이미지
-        // ------------------------------------------------------------------
-        ArtistBigBlock(
-            name = title, // 팝업으로 전달받은 곡 제목("강남스타일")을 그대로 넘겨줍니다.
-            painter = painterResource(id = R.drawable.share_icon), // 나중에 실제 앨범 에셋으로 교체
-            onClick = { /* 팝업 안에서는 이미지를 눌러도 동작이 필요 없다면 비워둡니다 */ },
-            modifier = Modifier.size(120.dp) // 피그마 시안에 맞게 160dp로 고정해주면 알아서 160x160 정사각형이 됩니다.
+        // [레이어 2] 앨범 아트 이미지 (FindScreen과 유사한 스타일 적용)
+        Image(
+            painter = painterResource(id = R.drawable.artist_big), // 싸이 앨범 이미지 리소스 연결
+            contentDescription = "Album Art",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(160.dp) // 정사각형 사이즈 지정
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(24.dp)) // 모서리 둥글게
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(24.dp)) // 앨범 아트와 곡명 사이 간격
 
-        // ------------------------------------------------------------------
         // [레이어 3] 곡 타이틀 및 아티스트
-        // ------------------------------------------------------------------
         Row(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Center
+            // Arrangement.spacedBy(8.dp)는 FindScreen에서 Row 내부에 사용되지 않아 개별 Spacer 사용
         ) {
             Text(
-                text = title,
-                style = Title.copy(
-                    fontWeight = FontWeight.Bold, // Title 폰트에 볼드체를 덧씌움
-                    color = GrayWhite             // 텍스트 색상 지정
-                )
+                text = title, // "강남스타일"
+                // FindScreen의 Heading 스타일 참조
+                style = Heading.copy(fontWeight = FontWeight.Bold),
+                color = GrayWhite
             )
-            Spacer(modifier = Modifier.width(8.dp))
-
+            Spacer(modifier = Modifier.width(8.dp)) // 타이틀과 아티스트 사이 간격
             Text(
-                text = artist,
-                style = LabelNormal.copy()
+                text = artist, // "PSY"
+                // FindScreen의 LabelNormal 스타일 참조
+                style = LabelNormal,
+                color = Gray400 // 약간 연한 회색
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(12.dp)) // 곡명과 상세 정보 사이 간격
 
-        // ------------------------------------------------------------------
-        // [레이어 4] 날짜 및 조회수 정보
-        // ------------------------------------------------------------------
+        // [레이어 4] 상세 정보 영역 (발굴일, 현재 조회수)
+        // FindScreen의 Caption 및 LabelNormal 스타일 참조
         Text(
-            text = "발굴일 $discoveryDate",
-            style = Caption.copy()
+            text = "발굴일 $discoveryDate", // "발굴일 24.03.15"
+            style = Caption, // 캡션 스타일
+            color = Gray400
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp)) // 발굴일과 조회수 사이 간격
 
         Text(
-            text = "현재 조회수 $currentViews",
-            style = Caption.copy()
+            text = "현재 조회수 $currentViews", // "현재 조회수 18,891회"
+            style = LabelNormal, // 라벨 일반 스타일
+            color = GrayWhite
         )
 
-        Spacer(modifier = Modifier.height(36.dp))
+        Spacer(modifier = Modifier.height(36.dp)) // 조회수와 버튼 사이 넓은 간격
 
-        // ------------------------------------------------------------------
-        // [레이어 5] 하단 액션 버튼
-        // ------------------------------------------------------------------
+        // [레이어 5] 하단 확인 버튼
+        // DigButton 대신 확인 전용 초록색 버튼으로 구현
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .clip(RoundedCornerShape(100.dp))
-                .background(GreenNormal)
-                .clickable { onConfirmClick() },
+                .fillMaxWidth() // 너비 꽉 채우기
+                .height(60.dp) // 버튼 높이 지정
+                .clip(RoundedCornerShape(100.dp)) // 알약 모양 모서리
+                .background(GreenNormal) // 초록색 배경
+                .clickable { onConfirmClick() }, // 클릭 이벤트 처리
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "확인",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = GrayBlack
+                style = LabelNormal.copy(fontWeight = FontWeight.Bold),
+                color = GrayBlack // 텍스트 색상
             )
         }
     }
 }
 
 // ==========================================================================
-// 👁️ 팝업 다이얼로그 프리뷰 검증
+// [ Cite: image_0.png ] 기반 팝업 다이얼로그 프리뷰
 // ==========================================================================
 @Preview(name = "Dig Challenge Popup Preview", showBackground = true, backgroundColor = 0xFF121212)
 @Composable
 fun DigChallengePopupPreview() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        DigChallengePopup(
-            title = "강남스타일",
-            artist = "PSY",
-            discoveryDate = "24.03.15",
-            currentViews = "18,891회",
-            onCloseClick = {},
-            onConfirmClick = {}
-        )
+    HackertonTheme {
+        // 프리뷰에서는 다이얼로그 바깥 영역을 시뮬레이션하기 위해 패딩 적용
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(GrayBlack) // 배경 어둡게 처리
+                .padding(32.dp),
+            contentAlignment = Alignment.Center // 중앙 배치
+        ) {
+            DigChallengePopup(
+                title = "강남스타일",
+                artist = "PSY",
+                discoveryDate = "24.03.15",
+                currentViews = "18,891회",
+                onCloseClick = { /* 닫기 클릭 */ },
+                onConfirmClick = { /* 확인 클릭 */ }
+            )
+        }
     }
 }
+
