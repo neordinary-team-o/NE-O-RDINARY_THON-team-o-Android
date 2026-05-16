@@ -1,6 +1,7 @@
 package com.example.hackerton.ui.navigation
 
 sealed class Route(val path: String) {
+    data object Login : Route("login")
     data object Home : Route("home")
 
     data object Detail : Route("detail/{itemId}") {
