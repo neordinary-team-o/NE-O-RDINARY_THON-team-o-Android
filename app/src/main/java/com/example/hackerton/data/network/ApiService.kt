@@ -1,5 +1,8 @@
 package com.example.hackerton.data.network
 
+import com.example.hackerton.data.model.ApiResponse
+import com.example.hackerton.data.model.SongSearchRequest
+import com.example.hackerton.data.model.SongSearchResponse
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -32,10 +35,13 @@ interface ApiService {
 
     @POST("items")
     suspend fun createItem(@Body body: CreateItemRequest): SampleItem
+
+    @POST("songs/search")
+    suspend fun searchSong(@Body body: SongSearchRequest): ApiResponse<SongSearchResponse>
 }
 
 object Api {
-    private const val BASE_URL = "https://example.com/api/"
+    private const val BASE_URL = "https://api.neordinary-o.r-e.kr/api/"
 
     val service: ApiService by lazy {
         NetworkClient.create(BASE_URL, ApiService::class.java)

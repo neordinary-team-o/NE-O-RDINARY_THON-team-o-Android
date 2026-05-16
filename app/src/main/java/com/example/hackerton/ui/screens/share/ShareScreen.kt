@@ -1,4 +1,4 @@
-package com.example.hackerton.ui.components
+package com.example.hackerton.ui.screens.share
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -34,19 +34,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.hackerton.R
 import com.example.hackerton.ui.theme.Caption
 import com.example.hackerton.ui.theme.Gray200
 import com.example.hackerton.ui.theme.Gray300
 import com.example.hackerton.ui.theme.GrayWhite
 import com.example.hackerton.ui.theme.GreenNormal
-import com.example.hackerton.ui.theme.Heading
 import com.example.hackerton.ui.theme.LabelNormal
 import com.example.hackerton.ui.theme.LabelReading
 import com.example.hackerton.ui.theme.Title
 
 @Composable
-fun ShareModal(
+fun ShareScreen(
     songTitle: String,
     artist: String,
     discoveryDate: String,
@@ -56,14 +56,12 @@ fun ShareModal(
     onBack: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // 배경 이미지
         Image(
             painter = painterResource(R.drawable.image_9),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
         )
-        // 다크 오버레이
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -96,14 +94,13 @@ fun ShareModal(
                 )
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(55.dp))
 
-            // 앨범 이미지
             Box(
                 modifier = Modifier
-                    .size(180.dp)
+                    .size(160.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clip(RoundedCornerShape(28.dp)),
+                    .clip(RoundedCornerShape(20.dp)),
             ) {
                 Image(
                     painter = painter,
@@ -113,9 +110,8 @@ fun ShareModal(
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // 곡 정보
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.Bottom,
@@ -123,7 +119,7 @@ fun ShareModal(
             ) {
                 Text(
                     text = songTitle,
-                    style = Heading.copy(fontWeight = FontWeight.Bold, color = GrayWhite),
+                    style = Title.copy(fontWeight = FontWeight.Bold, color = GrayWhite),
                 )
                 Text(
                     text = artist,
@@ -131,36 +127,46 @@ fun ShareModal(
                 )
             }
 
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(8.dp))
 
-            Text(
-                text = "발굴일 $discoveryDate",
-                style = Caption.copy(color = Gray300),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = "$elapsedTime 경과",
-                style = Caption.copy(color = Gray300),
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // Trend badge
             Row(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text("Trend Catcher", style = Caption.copy(color = GreenNormal, fontWeight = FontWeight.SemiBold))
-                Text("홍대병동님의 발견", style = Caption.copy(color = Gray300))
+                Text(
+                    "발굴일",
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                )
+                Text(
+                    discoveryDate,
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = "$elapsedTime 경과",
+                style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    "당신은",
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                )
+                Text(
+                    "Trend Catcher!",
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
+                )
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.weight(1f))
 
-            // 본문
             Text(
                 text = buildAnnotatedString {
                     append("당신이 12,400명이 듣던 시절 발견한 음악이 지금 ")
@@ -170,15 +176,16 @@ fun ShareModal(
                     append(" 빨랐습니다.")
                 },
                 style = LabelReading.copy(fontWeight = FontWeight.SemiBold, color = Gray200),
+                modifier = Modifier.padding(horizontal = 20.dp),
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
 
-            // Stats
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -196,24 +203,34 @@ fun ShareModal(
                 ) {
                     Text(
                         text = growthRate,
-                        style = Title.copy(fontWeight = FontWeight.Bold, color = GreenNormal),
+                        style = Title.copy(
+                            fontSize = 32.sp,
+                            lineHeight = 42.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = GreenNormal,
+                        ),
                     )
-                    Text("성장률", style = Caption.copy(color = GreenNormal))
+                    Text(
+                        "성장률",
+                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
+                    )
                 }
             }
+
+            Spacer(Modifier.height(40.dp))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun ShareModalPreview() {
-    ShareModal(
+private fun ShareScreenPreview() {
+    ShareScreen(
         songTitle = "0+0",
         artist = "한로로",
         discoveryDate = "24.03.15",
         elapsedTime = "8개월",
-        growthRate = "+4,723%",
+        growthRate = "+4.723%",
         painter = painterResource(R.drawable.artist_big),
         onBack = {},
     )

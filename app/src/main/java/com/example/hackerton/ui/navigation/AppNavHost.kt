@@ -11,11 +11,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.compose.ui.res.painterResource
 import com.example.hackerton.R
-import com.example.hackerton.ui.components.ShareModal
 import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
 import com.example.hackerton.ui.screens.login.LoginScreen
+import com.example.hackerton.ui.screens.share.ShareScreen
 
 @Composable
 fun AppNavHost(
@@ -43,6 +43,7 @@ fun AppNavHost(
             HomeScreen(
                 onSearchSubmit = { q -> navController.navigate(Route.Find.build(q)) },
                 onSongClick = { id -> navController.navigate(Route.Share.build(id)) },
+                onAddClick = { navController.navigate(Route.Find.build("")) },
             )
         }
         composable(
@@ -52,12 +53,12 @@ fun AppNavHost(
             ),
         ) { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString(Route.Share.ARG_ITEM_ID).orEmpty()
-            ShareModal(
+            ShareScreen(
                 songTitle = itemId,
                 artist = "한로로",
                 discoveryDate = "24.03.15",
                 elapsedTime = "8개월",
-                growthRate = "+4,723%",
+                growthRate = "+4.723%",
                 painter = painterResource(R.drawable.artist_big),
                 onBack = { navController.popBackStack() },
             )
