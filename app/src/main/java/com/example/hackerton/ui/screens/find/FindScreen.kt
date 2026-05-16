@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +51,7 @@ import com.example.hackerton.data.network.Api
 import com.example.hackerton.util.DeviceId
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.BrandGradientBackground
-import com.example.hackerton.ui.components.DigButton
+import com.example.hackerton.ui.components.CtaButton
 import com.example.hackerton.ui.components.DigChallengePopup
 import com.example.hackerton.ui.theme.BodyNormal
 import com.example.hackerton.ui.theme.Caption
@@ -266,10 +267,17 @@ fun FindScreen(
             }
 
             if (result != null && !isLoading) {
-                DigButton(
+                CtaButton(
                     text = "발굴하기",
                     onClick = { showChallengePopup = true },
-                    showArrow = true,
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.mining_icon),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
                 )
                 Spacer(Modifier.height(24.dp))
             }

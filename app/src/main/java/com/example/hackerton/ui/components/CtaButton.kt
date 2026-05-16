@@ -55,8 +55,8 @@ fun CtaButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier.fillMaxWidth(),
     variant: CtaVariant = CtaVariant.BrightGreen,
-    hasArrow: Boolean = false,
     enabled: Boolean = true,
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -90,14 +90,7 @@ fun CtaButton(
             ),
             color = contentColor,
         )
-        if (hasArrow) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(20.dp),
-            )
-        }
+        trailingIcon?.invoke()
     }
 }
 
@@ -113,7 +106,18 @@ private fun CtaButtonPreview() {
             CtaButton(text = "발굴 시작하기", onClick = {}, variant = CtaVariant.DeepGreen)
             CtaButton(text = "건너뛰기", onClick = {}, variant = CtaVariant.White)
             CtaButton(text = "건너뛰기", onClick = {}, variant = CtaVariant.Gray)
-            CtaButton(text = "로그인", onClick = {}, variant = CtaVariant.BrightGreen, hasArrow = true)
+            CtaButton(
+                text = "로그인",
+                onClick = {},
+                variant = CtaVariant.BrightGreen,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+            )
             CtaButton(text = "비활성화", onClick = {}, variant = CtaVariant.BrightGreen, enabled = false)
         }
     }
