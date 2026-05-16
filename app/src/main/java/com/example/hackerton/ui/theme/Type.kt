@@ -40,6 +40,7 @@ val Title = TextStyle(
 
 val Heading = TextStyle(
     fontFamily = Pretendard,
+    fontWeight = FontWeight.SemiBold,
     fontSize = 20.sp,
     lineHeight = 28.sp,
     letterSpacing = (-0.012).em,

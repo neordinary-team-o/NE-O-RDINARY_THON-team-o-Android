@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 import com.example.hackerton.R
 import com.example.hackerton.ui.theme.*
 
@@ -29,6 +30,7 @@ fun DigChallengePopup(
     artist: String,
     discoveryDate: String,
     currentViews: String,
+    thumbnailUrl: String,
     onCloseClick: () -> Unit,
     onConfirmClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -50,7 +52,7 @@ fun DigChallengePopup(
         // [레이어 1] 헤더 영역 (제목 + 닫기 버튼)
         Box(modifier = Modifier.fillMaxWidth()) {
             Image(
-                painter = painterResource(id = R.drawable.mining_text),
+                painter = painterResource(id = R.drawable.logo_mining_text),
                 contentDescription = "발굴 도전!",
                 contentScale = ContentScale.Fit, // 비율 깨짐 방지
                 modifier = Modifier
@@ -66,7 +68,7 @@ fun DigChallengePopup(
                     .size(24.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.x_icon), // 닫기 아이콘 리소스 연결
+                    painter = painterResource(id = R.drawable.ic_x), // 닫기 아이콘 리소스 연결
                     contentDescription = "닫기",
                     tint = GrayWhite // 아이콘 색상
                 )
@@ -75,15 +77,18 @@ fun DigChallengePopup(
 
         Spacer(modifier = Modifier.height(32.dp)) // 제목과 앨범 아트 사이 간격
 
-        // [레이어 2] 앨범 아트 이미지 (FindScreen과 유사한 스타일 적용)
-        Image(
-            painter = painterResource(id = R.drawable.artist_big), // 싸이 앨범 이미지 리소스 연결
+        // [레이어 2] 앨범 아트 이미지 — API thumbnailUrl 로딩
+        AsyncImage(
+            model = thumbnailUrl,
             contentDescription = "Album Art",
             contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.img_artist_placeholder),
+            error = painterResource(id = R.drawable.img_artist_placeholder),
+            fallback = painterResource(id = R.drawable.img_artist_placeholder),
             modifier = Modifier
-                .size(160.dp) // 정사각형 사이즈 지정
+                .size(160.dp)
                 .aspectRatio(1f)
-                .clip(RoundedCornerShape(24.dp)) // 모서리 둥글게
+                .clip(RoundedCornerShape(24.dp))
         )
 
         Spacer(modifier = Modifier.height(24.dp)) // 앨범 아트와 곡명 사이 간격
@@ -169,6 +174,7 @@ fun DigChallengePopupPreview() {
                 artist = "PSY",
                 discoveryDate = "24.03.15",
                 currentViews = "18,891회",
+                thumbnailUrl = "",
                 onCloseClick = { /* 닫기 클릭 */ },
                 onConfirmClick = { /* 확인 클릭 */ }
             )

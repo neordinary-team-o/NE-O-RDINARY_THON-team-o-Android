@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.hackerton.R
+import com.example.hackerton.ui.theme.Gray900
 import com.example.hackerton.ui.theme.GrayBlack
 
 /**
@@ -127,10 +128,40 @@ fun ArtistSmallBlock(
     }
 }
 
+/**
+ * 3. 빈 큰 블록 (slot이 비었을 때 자리만 유지)
+ */
+@Composable
+fun ArtistBigBlockEmpty(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(24.dp))
+            .background(Gray900)
+    )
+}
+
+/**
+ * 4. 빈 작은 블록 (slot이 비었을 때 자리만 유지)
+ */
+@Composable
+fun ArtistSmallBlockEmpty(
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Gray900)
+    )
+}
+
 @Preview(name = "Separated Artist Blocks Preview", showBackground = true)
 @Composable
 fun ArtistBlocksPreview() {
-    val dummyPainter = painterResource(id = R.drawable.arrow_icon)
+    val dummyPainter = painterResource(id = R.drawable.ic_arrow)
 
     Column(
         modifier = Modifier
