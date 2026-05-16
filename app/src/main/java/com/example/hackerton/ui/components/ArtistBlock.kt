@@ -39,7 +39,7 @@ fun ArtistBigBlock(
     painter: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f)
+    tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f),
 ) {
     Box(
         modifier = modifier
@@ -88,7 +88,7 @@ fun ArtistSmallBlock(
     painter: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f)
+    tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f),
 ) {
     Box(
         modifier = modifier
