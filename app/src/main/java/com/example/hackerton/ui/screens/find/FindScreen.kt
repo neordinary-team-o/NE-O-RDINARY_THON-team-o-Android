@@ -1,14 +1,12 @@
 package com.example.hackerton.ui.screens.find
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,10 +34,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,13 +49,13 @@ import com.example.hackerton.data.model.SongSearchResponse
 import com.example.hackerton.data.network.Api
 import com.example.hackerton.util.DeviceId
 import com.example.hackerton.ui.components.AppTextField
+import com.example.hackerton.ui.components.BrandGradientBackground
 import com.example.hackerton.ui.components.DigButton
 import com.example.hackerton.ui.components.DigChallengePopup
 import com.example.hackerton.ui.theme.BodyNormal
 import com.example.hackerton.ui.theme.Caption
 import com.example.hackerton.ui.theme.Gray300
 import com.example.hackerton.ui.theme.Gray400
-import com.example.hackerton.ui.theme.GrayBlack
 import com.example.hackerton.ui.theme.GrayWhite
 import com.example.hackerton.ui.theme.GreenLightActive
 import com.example.hackerton.ui.theme.HackertonTheme
@@ -121,30 +115,7 @@ fun FindScreen(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(GrayBlack),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .align(Alignment.TopCenter)
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF03FF67).copy(alpha = 0.15f),
-                                Color(0x0003FF67),
-                            ),
-                            center = Offset(x = size.width / 2f, y = 0f),
-                            radius = maxOf(size.width, size.height),
-                        )
-                    )
-                }
-        )
-
+    BrandGradientBackground(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxSize()

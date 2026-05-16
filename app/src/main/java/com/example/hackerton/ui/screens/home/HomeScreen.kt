@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +19,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -37,10 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -57,8 +51,8 @@ import com.example.hackerton.ui.components.ArtistBigBlock
 import com.example.hackerton.ui.components.ArtistBigBlockEmpty
 import com.example.hackerton.ui.components.ArtistSmallBlock
 import com.example.hackerton.ui.components.ArtistSmallBlockEmpty
+import com.example.hackerton.ui.components.BrandGradientBackground
 import com.example.hackerton.ui.theme.Gray800
-import com.example.hackerton.ui.theme.GrayBlack
 import com.example.hackerton.ui.theme.GrayWhite
 import com.example.hackerton.ui.theme.GreenLightActive
 import com.example.hackerton.ui.theme.HackertonTheme
@@ -81,30 +75,7 @@ fun HomeScreen(
     }
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(GrayBlack),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .align(Alignment.TopCenter)
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF03FF67).copy(alpha = 0.15f),
-                                Color(0x0003FF67),
-                            ),
-                            center = Offset(x = size.width / 2f, y = 0f),
-                            radius = maxOf(size.width, size.height),
-                        )
-                    )
-                }
-        )
-
+    BrandGradientBackground(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
