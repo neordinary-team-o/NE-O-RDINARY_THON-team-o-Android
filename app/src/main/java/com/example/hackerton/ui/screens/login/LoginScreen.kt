@@ -1,11 +1,8 @@
 package com.example.hackerton.ui.screens.login
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,10 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,9 +26,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.hackerton.R
 import com.example.hackerton.ui.components.AppTextField
+import com.example.hackerton.ui.components.BrandGradientBackground
 import com.example.hackerton.ui.components.CtaButton
 import com.example.hackerton.ui.components.CtaVariant
-import com.example.hackerton.ui.theme.GrayBlack
 import com.example.hackerton.ui.theme.GrayWhite
 import com.example.hackerton.ui.theme.HackertonTheme
 import com.example.hackerton.ui.theme.LabelNormal
@@ -48,30 +41,7 @@ fun LoginScreen(
     var nickname by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(GrayBlack)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .align(Alignment.TopCenter)
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF03FF67).copy(alpha = 0.15f),
-                                Color(0x0003FF67),
-                            ),
-                            center = Offset(x = size.width / 2f, y = 0f),
-                            radius = maxOf(size.width, size.height),
-                        )
-                    )
-                }
-        )
-
+    BrandGradientBackground(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -90,7 +60,7 @@ fun LoginScreen(
             Spacer(Modifier.height(32.dp))
 
             Image(
-                painter = painterResource(id = R.drawable.sub_logo),
+                painter = painterResource(id = R.drawable.logo_sub),
                 contentDescription = null,
             )
 

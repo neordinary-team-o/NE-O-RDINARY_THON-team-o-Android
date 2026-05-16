@@ -161,7 +161,7 @@ fun ArtistSmallBlockEmpty(
 @Preview(name = "Separated Artist Blocks Preview", showBackground = true)
 @Composable
 fun ArtistBlocksPreview() {
-    val dummyPainter = painterResource(id = R.drawable.arrow_icon)
+    val dummyPainter = painterResource(id = R.drawable.ic_arrow)
 
     Column(
         modifier = Modifier

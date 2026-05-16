@@ -21,11 +21,14 @@ object DiscoveredSongsStore {
             decode(prefs[KEY_JSON])
         }
 
+    /**
+     * videoId 기준으로 upsert. 기존 entry가 있으면 새 데이터로 교체.
+     */
     suspend fun add(context: Context, song: SongSearchResponse) {
         context.applicationContext.discoveredSongsDataStore.edit { prefs ->
             val current = decode(prefs[KEY_JSON])
-            if (current.any { it.videoId == song.videoId }) return@edit
-            prefs[KEY_JSON] = json.encodeToString(current + song)
+            val others = current.filterNot { it.videoId == song.videoId }
+            prefs[KEY_JSON] = json.encodeToString(others + song)
         }
     }
 

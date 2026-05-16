@@ -120,7 +120,7 @@ fun DigCommentInput(
             rememberVectorPainter(if (isSubmitted) Icons.Default.Edit else Icons.Default.ArrowForward)
         } else {
             // 실제 앱 구동 시에는 디자이너님의 전용 XML 리소스 정상 로드
-            painterResource(id = if (isSubmitted) R.drawable.comment_icon else R.drawable.arrow_icon)
+            painterResource(id = if (isSubmitted) R.drawable.ic_comment else R.drawable.ic_arrow)
         }
 
         Box(

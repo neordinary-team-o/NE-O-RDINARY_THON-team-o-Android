@@ -1,6 +1,10 @@
 package com.example.hackerton.data.network
 
 import com.example.hackerton.data.model.ApiResponse
+import com.example.hackerton.data.model.DigDetailResponse
+import com.example.hackerton.data.model.DigListResponse
+import com.example.hackerton.data.model.DigRequest
+import com.example.hackerton.data.model.DigResponse
 import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
 import kotlinx.serialization.Serializable
@@ -38,6 +42,18 @@ interface ApiService {
 
     @POST("songs/search")
     suspend fun searchSong(@Body body: SongSearchRequest): ApiResponse<SongSearchResponse>
+
+    @POST("digs")
+    suspend fun registerDig(@Body body: DigRequest): ApiResponse<DigResponse>
+
+    @GET("digs")
+    suspend fun listDigs(
+        @Query("userId") userId: String,
+        @Query("page") page: Int,
+    ): ApiResponse<DigListResponse>
+
+    @GET("digs/{digId}")
+    suspend fun getDig(@Path("digId") digId: Long): ApiResponse<DigDetailResponse>
 }
 
 object Api {

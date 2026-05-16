@@ -1,14 +1,12 @@
 package com.example.hackerton.ui.screens.find
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,11 +17,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,9 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -48,18 +40,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.SubcomposeAsyncImage
 import com.example.hackerton.R
-import com.example.hackerton.data.local.DiscoveredSongsStore
-import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
-import com.example.hackerton.data.network.Api
+import com.example.hackerton.data.repository.SearchResult
+import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.components.AppTextField
-import com.example.hackerton.ui.components.DigButton
+import com.example.hackerton.ui.components.AppTopBar
+import com.example.hackerton.ui.components.BrandGradientBackground
+import com.example.hackerton.ui.components.CtaButton
 import com.example.hackerton.ui.components.DigChallengePopup
 import com.example.hackerton.ui.theme.BodyNormal
 import com.example.hackerton.ui.theme.Caption
 import com.example.hackerton.ui.theme.Gray300
 import com.example.hackerton.ui.theme.Gray400
-import com.example.hackerton.ui.theme.GrayBlack
 import com.example.hackerton.ui.theme.GrayWhite
 import com.example.hackerton.ui.theme.GreenLightActive
 import com.example.hackerton.ui.theme.HackertonTheme
@@ -67,7 +59,6 @@ import com.example.hackerton.ui.theme.Heading
 import com.example.hackerton.ui.theme.LabelNormal
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -84,6 +75,7 @@ fun FindScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repo = remember(context) { SongRepository.get(context) }
 
     LaunchedEffect(query) {
         val keyword = query.trim()
@@ -96,51 +88,24 @@ fun FindScreen(
         delay(400) // debounce
         isLoading = true
         errorMessage = null
-        try {
-            val resp = Api.service.searchSong(SongSearchRequest(keyword))
-            if (resp.success) {
-                result = resp.data
-                errorMessage = if (resp.data == null) "검색 결과가 없습니다." else null
-            } else {
-                result = null
-                errorMessage = resp.error?.message ?: "검색 결과가 없습니다."
+        when (val r = repo.search(keyword)) {
+            is SearchResult.Success -> {
+                result = r.song
+                errorMessage = null
             }
-        } catch (e: HttpException) {
-            result = null
-            errorMessage = if (e.code() == 404) "검색 결과가 없습니다."
-            else e.message ?: "검색 실패"
-        } catch (e: Exception) {
-            result = null
-            errorMessage = e.message ?: "네트워크 오류"
-        } finally {
-            isLoading = false
+            SearchResult.NotFound -> {
+                result = null
+                errorMessage = "검색 결과가 없습니다."
+            }
+            is SearchResult.Error -> {
+                result = null
+                errorMessage = r.message
+            }
         }
+        isLoading = false
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(GrayBlack),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.5f)
-                .align(Alignment.TopCenter)
-                .drawBehind {
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF03FF67).copy(alpha = 0.15f),
-                                Color(0x0003FF67),
-                            ),
-                            center = Offset(x = size.width / 2f, y = 0f),
-                            radius = maxOf(size.width, size.height),
-                        )
-                    )
-                }
-        )
-
+    BrandGradientBackground(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -151,23 +116,7 @@ fun FindScreen(
             Spacer(Modifier.height(16.dp))
 
             // Header
-            Box(modifier = Modifier.fillMaxWidth()) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.align(Alignment.CenterStart),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로",
-                        tint = GrayWhite,
-                    )
-                }
-                Image(
-                    painter = painterResource(R.drawable.logo_hongdae),
-                    contentDescription = "홍대병동",
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            }
+            AppTopBar(onBack = onBack)
 
             Spacer(Modifier.height(20.dp))
 
@@ -178,7 +127,7 @@ fun FindScreen(
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(R.drawable.find_icon),
+                        painter = painterResource(R.drawable.ic_find),
                         contentDescription = null,
                         tint = GrayWhite,
                         modifier = Modifier.size(20.dp),
@@ -229,7 +178,7 @@ fun FindScreen(
                                 },
                                 error = {
                                     Image(
-                                        painter = painterResource(R.drawable.artist_big),
+                                        painter = painterResource(R.drawable.img_artist_placeholder),
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize(),
@@ -291,10 +240,17 @@ fun FindScreen(
             }
 
             if (result != null && !isLoading) {
-                DigButton(
+                CtaButton(
                     text = "발굴하기",
                     onClick = { showChallengePopup = true },
-                    showArrow = true,
+                    trailingIcon = {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_mining),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    },
                 )
                 Spacer(Modifier.height(24.dp))
             }
@@ -313,7 +269,7 @@ fun FindScreen(
                     onConfirmClick = {
                         if (song != null) {
                             scope.launch {
-                                DiscoveredSongsStore.add(context, song)
+                                repo.dig(song)
                                 showChallengePopup = false
                                 onBack()
                             }
