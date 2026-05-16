@@ -2,12 +2,12 @@ package com.example.hackerton.data.network
 
 import com.example.hackerton.data.model.ApiResponse
 import com.example.hackerton.data.model.DigDetailResponse
+import com.example.hackerton.data.model.DigListItem
 import com.example.hackerton.data.model.DigListResponse
 import com.example.hackerton.data.model.DigRequest
 import com.example.hackerton.data.model.DigResponse
 import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
-import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -15,31 +15,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-@Serializable
-data class SampleItem(
-    val id: String,
-    val title: String,
-    val description: String? = null,
-)
-
-@Serializable
-data class CreateItemRequest(
-    val title: String,
-    val description: String? = null,
-)
-
 interface ApiService {
-
-    @GET("items")
-    suspend fun getItems(
-        @Query("limit") limit: Int = 20,
-    ): List<SampleItem>
-
-    @GET("items/{id}")
-    suspend fun getItem(@Path("id") id: String): SampleItem
-
-    @POST("items")
-    suspend fun createItem(@Body body: CreateItemRequest): SampleItem
 
     @POST("songs/search")
     suspend fun searchSong(@Body body: SongSearchRequest): ApiResponse<SongSearchResponse>
@@ -67,7 +43,7 @@ interface ApiService {
     suspend fun searchMyDigs(
         @Query("userId") userId: String,
         @Query("keyword") keyword: String,
-    ): ApiResponse<List<com.example.hackerton.data.model.DigListItem>>
+    ): ApiResponse<List<DigListItem>>
 }
 
 object Api {

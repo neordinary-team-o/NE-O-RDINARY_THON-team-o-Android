@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -56,6 +57,7 @@ fun ShareScreen(
     narrativeMessage: String?,
     painter: Painter,
     onBack: () -> Unit,
+    isLoading: Boolean = false,
 ) {
     val snapshotLabel = snapshotViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
     val currentLabel = currentViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
@@ -86,6 +88,18 @@ fun ShareScreen(
                 logoContentDescription = "발굴 성공!",
                 onBack = onBack,
             )
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(color = GreenNormal)
+                }
+                return@Column
+            }
 
             Spacer(Modifier.height(55.dp))
 
