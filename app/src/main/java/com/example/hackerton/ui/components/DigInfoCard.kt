@@ -22,11 +22,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hackerton.R
 import com.example.hackerton.ui.theme.*
 
 @Composable
@@ -45,7 +47,7 @@ fun DigInfoCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Gray900) // 디자인 토큰 적용
+            .background(Gray900.copy(alpha = 0.65f))
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         // [상단 레이아웃] 곡명 + 아티스트명 및 우측 컨트롤 버튼 셋
@@ -56,7 +58,7 @@ fun DigInfoCard(
         ) {
             // 텍스트 영역 묶음 (버튼 영역을 침범하지 않도록 weight(1f) 부여)
             Row(
-                verticalAlignment = Alignment.Bottom, // Baseline 정렬 느낌을 위해 Bottom 조율
+                verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
@@ -65,9 +67,9 @@ fun DigInfoCard(
                         fontWeight = FontWeight.Bold,
                         color = GrayWhite
                     ),
-                    maxLines = 1, // 🔥 예외 처리: 제목이 아무리 길어도 1줄 고정
-                    overflow = TextOverflow.Ellipsis, // 🔥 말줄임표(...) 처리
-                    modifier = Modifier.weight(1f, fill = false) // 글자가 짧을 때 공간 낭비 방지
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -76,8 +78,8 @@ fun DigInfoCard(
                         fontWeight = FontWeight.Normal,
                         color = Gray300
                     ),
-                    maxLines = 1, // 🔥 예외 처리: 아티스트명 1줄 고정
-                    overflow = TextOverflow.Ellipsis, // 🔥 말줄임표(...) 처리
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false)
                 )
             }
@@ -88,14 +90,16 @@ fun DigInfoCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onShareClick) {
                     Icon(
-                        imageVector = Icons.Default.Share,
+                        // 🔥 기존 내장 라이브러리 대신 drawable의 share_icon을 로드합니다.
+                        painter = painterResource(id = R.drawable.share_icon),
                         contentDescription = "공유하기",
-                        tint = GrayWhite
+                        tint = GrayWhite // 디자인 시스템에 맞는 흰색 틴트 유지
                     )
                 }
                 IconButton(onClick = onCloseClick) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        // 🔥 기존 내장 라이브러리 대신 drawable의 x_icon을 로드합니다.
+                        painter = painterResource(id = R.drawable.x_icon),
                         contentDescription = "닫기",
                         tint = GrayWhite
                     )
@@ -159,7 +163,7 @@ fun DigInfoCard(
                     text = elapsedTime,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = GreenNormal // 디자이너 시안 포인트 컬러 맞춤
+                    color = GreenNormal
                 )
             }
         }
