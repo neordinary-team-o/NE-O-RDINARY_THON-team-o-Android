@@ -21,49 +21,39 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.hackerton.ui.theme.GrayWhite
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.hackerton.R
+import com.example.hackerton.ui.theme.GrayBlack
 
 /**
- * 아티스트 블록의 크기 유형 정의 (Big / Small)
+ * 1. 큰 아티스트 블록 (artist_big)
  */
-enum class ArtistBlockSize { Big, Small }
-
 @Composable
-fun ArtistBlock(
+fun ArtistBigBlock(
     name: String,
     painter: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: ArtistBlockSize = ArtistBlockSize.Big,
-    // 디자이너 시안의 불투명도/색상 필터 상태 변화에 대응하기 위한 변수
     tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f)
 ) {
-    // 1. 디자이너 시안 기준 크기별 라운드(Corner Radius) 분기
-    val cornerRadius = if (size == ArtistBlockSize.Big) 24.dp else 16.dp
-
-    // 2. 크기별 텍스트 스타일 및 내부 패딩 분기
-    val textStyle = if (size == ArtistBlockSize.Big) {
-        MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = GrayWhite)
-    } else {
-        MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, color = GrayWhite)
-    }
-    val internalPadding = if (size == ArtistBlockSize.Big) 16.dp else 12.dp
-
     Box(
         modifier = modifier
-            .aspectRatio(1f) // 🔥 핵심: 하드코딩 크기 없이 무조건 1:1 정사각형 비율을 강제하여 가변성 확보
-            .clip(RoundedCornerShape(cornerRadius))
+            .aspectRatio(1f) // 정사각형 가변 비율 유지
+            .clip(RoundedCornerShape(24.dp)) // 큰 블록용 라운드
             .clickable { onClick() }
     ) {
-        // [레이어 1] 아티스트 이미지 (전체 채우기)
         Image(
             painter = painter,
-            contentDescription = "$name 프로필 이미지",
-            contentScale = ContentScale.Crop, // 찌그러짐 없이 꽉 채우기
+            contentDescription = "$name 프로필",
+            contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
-        // [레이어 2] 딤(Dim) 및 컬러 필터 오버레이
-        // 하단 흰색 글씨 가독성을 위해 아래로 갈수록 어두워지는 그라데이션 적용
+        // 하단 텍스트 가독성을 위한 그라데이션 오버레이
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -76,14 +66,96 @@ fun ArtistBlock(
                     )
                 )
         )
-
-        // [레이어 3] 아티스트 이름 (좌측 하단 고정)
         Text(
             text = name,
-            style = textStyle,
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = GrayWhite
+            ),
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(internalPadding)
+                .padding(16.dp)
         )
+    }
+}
+
+/**
+ * 2. 작은 아티스트 블록 (artist_small)
+ */
+@Composable
+fun ArtistSmallBlock(
+    name: String,
+    painter: Painter,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    tintOverlayColor: Color = Color.Black.copy(alpha = 0.3f)
+) {
+    Box(
+        modifier = modifier
+            .aspectRatio(1f) // 정사각형 가변 비율 유지
+            .clip(RoundedCornerShape(16.dp)) // 작은 블록용 라운드
+            .clickable { onClick() }
+    ) {
+        Image(
+            painter = painter,
+            contentDescription = "$name 프로필",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            tintOverlayColor.copy(alpha = tintOverlayColor.alpha * 0.3f),
+                            tintOverlayColor.copy(alpha = tintOverlayColor.alpha * 1.2f)
+                        )
+                    )
+                )
+        )
+        Text(
+            text = name,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontWeight = FontWeight.Bold,
+                color = GrayWhite
+            ),
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(12.dp)
+        )
+    }
+}
+
+@Preview(name = "Separated Artist Blocks Preview", showBackground = true)
+@Composable
+fun ArtistBlocksPreview() {
+    val dummyPainter = painterResource(id = R.drawable.arrow_icon)
+
+    Column(
+        modifier = Modifier
+            .background(GrayBlack)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(text = "Artist Big", color = GrayWhite)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 이제 그냥 깔끔하게 함수 이름으로 호출 끝!
+            ArtistBigBlock(name = "한로로", painter = dummyPainter, onClick = {}, modifier = Modifier.weight(1f))
+            ArtistBigBlock(name = "한로로", painter = dummyPainter, onClick = {}, modifier = Modifier.weight(1f))
+        }
+
+        Text(text = "Artist Small", color = GrayWhite)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ArtistSmallBlock(name = "10cm", painter = dummyPainter, onClick = {}, modifier = Modifier.weight(1f))
+            ArtistSmallBlock(name = "10cm", painter = dummyPainter, onClick = {}, modifier = Modifier.weight(1f))
+            ArtistSmallBlock(name = "10cm", painter = dummyPainter, onClick = {}, modifier = Modifier.weight(1f))
+        }
     }
 }
