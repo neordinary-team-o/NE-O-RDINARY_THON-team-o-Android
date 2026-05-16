@@ -54,6 +54,12 @@ interface ApiService {
 
     @GET("digs/{digId}")
     suspend fun getDig(@Path("digId") digId: Long): ApiResponse<DigDetailResponse>
+
+    @GET("digs/me/search")
+    suspend fun searchMyDigs(
+        @Query("userId") userId: String,
+        @Query("keyword") keyword: String,
+    ): ApiResponse<List<com.example.hackerton.data.model.DigListItem>>
 }
 
 object Api {

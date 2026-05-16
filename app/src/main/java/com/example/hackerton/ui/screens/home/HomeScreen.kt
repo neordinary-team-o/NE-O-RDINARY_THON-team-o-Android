@@ -19,9 +19,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import android.util.Log
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
@@ -41,7 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,7 +49,9 @@ import coil3.compose.rememberAsyncImagePainter
 import com.example.hackerton.R
 import com.example.hackerton.data.model.DigListItem
 import com.example.hackerton.data.repository.ListDigsResult
+import com.example.hackerton.data.repository.SearchMyDigsResult
 import com.example.hackerton.data.repository.SongRepository
+import kotlinx.coroutines.delay
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.components.ArtistBigBlock
@@ -66,22 +68,27 @@ import com.example.hackerton.ui.theme.Heading
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onSearchSubmit: (String) -> Unit = {},
     onSongClick: (String) -> Unit = {},
     onAddClick: () -> Unit = {},
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    val isSearching = searchQuery.isNotBlank()
 
     val context = LocalContext.current
     val repo = remember(context) { SongRepository.get(context) }
 
+    // ── 일반 모드: 페이지네이션된 dig 목록 ──
     val fetchedPages = remember { mutableStateMapOf<Int, List<DigListItem>>() }
     var totalPages by remember { mutableStateOf(0) }
     val pagerState = rememberPagerState(pageCount = { maxOf(totalPages, 1) })
 
+    // ── 검색 모드: keyword → 결과 ──
+    var searchResults by remember { mutableStateOf<List<DigListItem>>(emptyList()) }
+
     // 1) Repository가 dig 성공 후 직접 알려주는 신호 — 가장 확실한 invalidate 경로
     val digsInvalidated by repo.digsInvalidated.collectAsState()
     LaunchedEffect(digsInvalidated) {
+        Log.d("HomeScreen", "digsInvalidated changed -> $digsInvalidated (will clear cache if > 0)")
         if (digsInvalidated > 0) {
             fetchedPages.clear()
             totalPages = 0
@@ -89,21 +96,43 @@ fun HomeScreen(
     }
     // 2) 다른 경로(앱 백그라운드 → 복귀 등)에서 resume 시 안전망
     LifecycleResumeEffect(Unit) {
+        Log.d("HomeScreen", "onResume -> clearing cache")
         fetchedPages.clear()
         totalPages = 0
         onPauseOrDispose { }
     }
 
-    LaunchedEffect(pagerState.currentPage, totalPages) {
+    // 일반 모드에서만 페이지별 fetch (검색 중이면 페이저는 비활성)
+    LaunchedEffect(pagerState.currentPage, totalPages, isSearching) {
+        if (isSearching) return@LaunchedEffect
         val current = pagerState.currentPage
+        Log.d("HomeScreen", "fetch trigger page=$current totalPages=$totalPages cached=${fetchedPages.containsKey(current)}")
         if (fetchedPages.containsKey(current)) return@LaunchedEffect
         when (val r = repo.listDigs(current)) {
             is ListDigsResult.Success -> {
+                Log.d("HomeScreen", "fetch success page=$current items=${r.data.content.size} totalPages=${r.data.totalPages}")
                 fetchedPages[current] = r.data.content
                 if (r.data.totalPages != totalPages) totalPages = r.data.totalPages
             }
             is ListDigsResult.Error -> {
+                Log.w("HomeScreen", "fetch error page=$current msg=${r.message}")
                 fetchedPages[current] = emptyList()
+            }
+        }
+    }
+
+    // 검색어 변경 시 디바운스 후 /api/digs/me/search 호출
+    LaunchedEffect(searchQuery) {
+        if (!isSearching) {
+            searchResults = emptyList()
+            return@LaunchedEffect
+        }
+        delay(250)
+        when (val r = repo.searchMyDigs(searchQuery)) {
+            is SearchMyDigsResult.Success -> searchResults = r.items
+            is SearchMyDigsResult.Error -> {
+                Log.w("HomeScreen", "search error ${r.message}")
+                searchResults = emptyList()
             }
         }
     }
@@ -133,21 +162,13 @@ fun HomeScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // Search — IME 검색 키 누르면 FindScreen으로 이동
+            // Search — 입력 즉시 /api/digs/me/search 호출 (디바운스).
+            // 검색 결과가 있으면 그리드 큰 슬롯부터 채워서 보여준다.
             AppTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 placeholder = "검색어를 입력하세요",
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        if (searchQuery.isNotBlank()) {
-                            onSearchSubmit(searchQuery)
-                            searchQuery = ""
-                        }
-                    },
-                ),
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.ic_find),
@@ -156,6 +177,18 @@ fun HomeScreen(
                         modifier = Modifier.size(20.dp),
                     )
                 },
+                trailingIcon = if (isSearching) {
+                    {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "지우기",
+                            tint = GrayWhite,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable { searchQuery = "" },
+                        )
+                    }
+                } else null,
             )
 
             Spacer(Modifier.height(32.dp))
@@ -170,76 +203,94 @@ fun HomeScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxWidth(),
-            ) { pageIndex ->
-                val items = fetchedPages[pageIndex].orEmpty()
-                Column {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        BigSlot(
-                            item = items.getOrNull(0),
-                            onSongClick = onSongClick,
-                            modifier = Modifier.weight(2f),
-                        )
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            SmallSlot(
-                                item = items.getOrNull(1),
-                                onSongClick = onSongClick,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                            SmallSlot(
-                                item = items.getOrNull(2),
-                                onSongClick = onSongClick,
-                                modifier = Modifier.fillMaxWidth(),
+            if (isSearching) {
+                // 검색 모드: 1페이지로 결과 표시 (큰 슬롯부터 순서대로 채움)
+                DigGrid(
+                    items = searchResults,
+                    onSongClick = onSongClick,
+                )
+            } else {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { pageIndex ->
+                    DigGrid(
+                        items = fetchedPages[pageIndex].orEmpty(),
+                        onSongClick = onSongClick,
+                    )
+                }
+
+                if (totalPages > 1) {
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    ) {
+                        repeat(totalPages) { i ->
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (i == pagerState.currentPage) GreenLightActive else Gray800
+                                    )
                             )
                         }
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SmallSlot(
-                            item = items.getOrNull(3),
-                            onSongClick = onSongClick,
-                            modifier = Modifier.weight(1f),
-                        )
-                        SmallSlot(
-                            item = items.getOrNull(4),
-                            onSongClick = onSongClick,
-                            modifier = Modifier.weight(1f),
-                        )
-                        SmallSlot(
-                            item = items.getOrNull(5),
-                            onSongClick = onSongClick,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
-            }
-
-            if (totalPages > 1) {
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                ) {
-                    repeat(totalPages) { i ->
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (i == pagerState.currentPage) GreenLightActive else Gray800
-                                )
-                        )
                     }
                 }
             }
             Spacer(Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun DigGrid(
+    items: List<DigListItem>,
+    onSongClick: (String) -> Unit,
+) {
+    Column {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            BigSlot(
+                item = items.getOrNull(0),
+                onSongClick = onSongClick,
+                modifier = Modifier.weight(2f),
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                SmallSlot(
+                    item = items.getOrNull(1),
+                    onSongClick = onSongClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                SmallSlot(
+                    item = items.getOrNull(2),
+                    onSongClick = onSongClick,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SmallSlot(
+                item = items.getOrNull(3),
+                onSongClick = onSongClick,
+                modifier = Modifier.weight(1f),
+            )
+            SmallSlot(
+                item = items.getOrNull(4),
+                onSongClick = onSongClick,
+                modifier = Modifier.weight(1f),
+            )
+            SmallSlot(
+                item = items.getOrNull(5),
+                onSongClick = onSongClick,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
