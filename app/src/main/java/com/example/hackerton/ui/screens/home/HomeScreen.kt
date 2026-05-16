@@ -52,6 +52,7 @@ import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.ArtistBigBlock
 import com.example.hackerton.ui.components.ArtistSmallBlock
 import com.example.hackerton.ui.components.DigInfoCard
+import com.example.hackerton.ui.components.ShareModal
 import com.example.hackerton.ui.theme.GrayBlack
 import com.example.hackerton.ui.theme.Gray800
 import com.example.hackerton.ui.theme.GrayWhite
@@ -70,6 +71,7 @@ fun HomeScreen(
 
     val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
     var lastShownSong by remember { mutableStateOf("") }
+    var showShare by remember { mutableStateOf(false) }
     LaunchedEffect(selectedSong) {
         selectedSong?.let { lastShownSong = it }
     }
@@ -251,8 +253,21 @@ fun HomeScreen(
                 growthRate = "+4,723%",
                 discoveryDate = "24.03.15",
                 elapsedTime = "8개월 경과",
-                onShareClick = {},
+                onShareClick = { showShare = true },
                 onCloseClick = { viewModel.clearSelection() },
+            )
+        }
+
+        if (showShare) {
+            ShareModal(
+                songTitle = lastShownSong,
+                artist = "한로로",
+                discoveryDate = "24.03.15",
+                elapsedTime = "8개월",
+                growthRate = "+4,723%",
+                painter = painterResource(R.drawable.artist_big),
+                onShareClick = { showShare = false },
+                onDismiss = { showShare = false },
             )
         }
     }
