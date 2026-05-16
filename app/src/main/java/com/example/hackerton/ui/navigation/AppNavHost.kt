@@ -9,16 +9,26 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
+import com.example.hackerton.ui.screens.login.LoginScreen
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Route.Home.path,
+    startDestination: String = Route.Login.path,
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
     ) {
+        composable(Route.Login.path) {
+            LoginScreen(
+                onLoginClick = { _, _ ->
+                    navController.navigate(Route.Home.path) {
+                        popUpTo(Route.Login.path) { inclusive = true }
+                    }
+                },
+            )
+        }
         composable(Route.Home.path) {
             HomeScreen(
                 onItemClick = { itemId ->

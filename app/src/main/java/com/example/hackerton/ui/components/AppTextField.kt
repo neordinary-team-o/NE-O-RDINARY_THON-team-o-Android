@@ -15,11 +15,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,8 +29,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.hackerton.R
 import com.example.hackerton.ui.theme.BodyNormal
 import com.example.hackerton.ui.theme.Gray600
 import com.example.hackerton.ui.theme.Gray800
@@ -47,6 +48,7 @@ fun AppTextField(
     placeholder: String = "",
     singleLine: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
@@ -75,6 +77,7 @@ fun AppTextField(
             cursorBrush = SolidColor(GreenNormal),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation,
             interactionSource = interactionSource,
             decorationBox = { innerTextField ->
                 Row(
@@ -125,7 +128,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "검색",
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        painter = painterResource(id = R.drawable.find_icon),
                         contentDescription = null,
                         tint = Gray600,
                         modifier = Modifier.size(20.dp),
@@ -139,7 +142,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "검색",
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        painter = painterResource(id = R.drawable.find_icon),
                         contentDescription = null,
                         tint = GrayWhite,
                         modifier = Modifier.size(20.dp),
@@ -161,7 +164,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "",
                 trailingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        painter = painterResource(id = R.drawable.check_icon),
                         contentDescription = "Valid",
                         tint = GreenNormal,
                         modifier = Modifier.size(20.dp),
