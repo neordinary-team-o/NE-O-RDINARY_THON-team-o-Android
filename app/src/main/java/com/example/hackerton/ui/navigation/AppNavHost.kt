@@ -30,11 +30,7 @@ fun AppNavHost(
             )
         }
         composable(Route.Home.path) {
-            HomeScreen(
-                onItemClick = { itemId ->
-                    navController.navigate(Route.Detail.build(itemId))
-                },
-            )
+            HomeScreen()
         }
         composable(
             route = Route.Detail.path,
