@@ -48,10 +48,17 @@ fun ShareScreen(
     artist: String,
     discoveryDate: String,
     elapsedTime: String,
-    growthRate: String,
+    snapshotViewCount: Long?,
+    currentViewCount: Long?,
+    growthRate: Double?,
+    achievementBadge: String?,
     painter: Painter,
     onBack: () -> Unit,
 ) {
+    val snapshotLabel = snapshotViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
+    val currentLabel = currentViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
+    val growthLabel = growthRate?.let { "${if (it >= 0) "+" else ""}${"%.3f".format(it)}%" } ?: "-"
+    val badgeLabel = formatBadge(achievementBadge)
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(R.drawable.share_success_background),
@@ -135,26 +142,30 @@ fun ShareScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(
-                    "당신은",
-                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
-                )
-                Text(
-                    "Trend Catcher!",
-                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
-                )
+            if (badgeLabel != null) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        "당신은",
+                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                    )
+                    Text(
+                        badgeLabel,
+                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
+                    )
+                }
             }
 
             Spacer(Modifier.weight(1f))
 
             Text(
                 text = buildAnnotatedString {
-                    append("당신이 12,400명이 듣던 시절 발견한 음악이 지금 ")
-                    withStyle(SpanStyle(color = GreenNormal)) { append("5,800만명") }
+                    append("당신이 ")
+                    withStyle(SpanStyle(color = GreenNormal)) { append(snapshotLabel) }
+                    append("이던 시절 발견한 음악이 지금 ")
+                    withStyle(SpanStyle(color = GreenNormal)) { append(currentLabel) }
                     append("에게 재생되고 있습니다. 당신의 귀는 시대보다 ")
                     withStyle(SpanStyle(color = GreenNormal)) { append(elapsedTime) }
                     append(" 빨랐습니다.")
@@ -174,11 +185,11 @@ fun ShareScreen(
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text("당시 조회수", style = Caption.copy(color = Gray300))
-                        Text("14,205회", style = Caption.copy(color = Gray300))
+                        Text(snapshotLabel, style = Caption.copy(color = Gray300))
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text("현재 조회수", style = Caption.copy(color = GrayWhite))
-                        Text("18,891회", style = Caption.copy(color = GrayWhite))
+                        Text(currentLabel, style = Caption.copy(color = GrayWhite))
                     }
                 }
                 Row(
@@ -186,7 +197,7 @@ fun ShareScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
-                        text = growthRate,
+                        text = growthLabel,
                         style = Title.copy(
                             fontSize = 32.sp,
                             lineHeight = 42.sp,
@@ -206,6 +217,13 @@ fun ShareScreen(
     }
 }
 
+private fun formatBadge(badge: String?): String? = when (badge) {
+    null, "" -> null
+    "TRENDSETTER" -> "Trend Setter!"
+    "TREND_CATCHER" -> "Trend Catcher!"
+    else -> badge
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun ShareScreenPreview() {
@@ -214,7 +232,10 @@ private fun ShareScreenPreview() {
         artist = "한로로",
         discoveryDate = "24.03.15",
         elapsedTime = "8개월",
-        growthRate = "+4.723%",
+        snapshotViewCount = 14205,
+        currentViewCount = 58_000_000,
+        growthRate = 4.723,
+        achievementBadge = "TREND_CATCHER",
         painter = painterResource(R.drawable.artist_big),
         onBack = {},
     )

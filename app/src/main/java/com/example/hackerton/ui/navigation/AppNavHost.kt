@@ -81,8 +81,11 @@ fun AppNavHost(
                 songTitle = song?.title ?: itemId,
                 artist = song?.artist ?: "",
                 discoveryDate = formatDiscoveryDate(song?.discoveredAt),
-                elapsedTime = "8개월",
-                growthRate = "+4.723%",
+                elapsedTime = formatElapsed(song?.discoveredAt),
+                snapshotViewCount = song?.snapshotViewCount,
+                currentViewCount = song?.currentViewCount,
+                growthRate = song?.growthRate,
+                achievementBadge = song?.achievementBadge,
                 painter = painter,
                 onBack = { navController.popBackStack() },
             )
@@ -123,5 +126,23 @@ private fun formatDiscoveryDate(iso: String?): String {
     if (iso.isNullOrBlank()) return ""
     return runCatching {
         LocalDateTime.parse(iso).format(DISCOVERY_DATE_FORMAT)
+    }.getOrDefault("")
+}
+
+private fun formatElapsed(iso: String?): String {
+    if (iso.isNullOrBlank()) return ""
+    return runCatching {
+        val dug = LocalDateTime.parse(iso)
+        val now = LocalDateTime.now()
+        val years = java.time.temporal.ChronoUnit.YEARS.between(dug, now)
+        if (years > 0) return "${years}년"
+        val months = java.time.temporal.ChronoUnit.MONTHS.between(dug, now)
+        if (months > 0) return "${months}개월"
+        val days = java.time.temporal.ChronoUnit.DAYS.between(dug, now)
+        if (days > 0) return "${days}일"
+        val hours = java.time.temporal.ChronoUnit.HOURS.between(dug, now)
+        if (hours > 0) return "${hours}시간"
+        val minutes = java.time.temporal.ChronoUnit.MINUTES.between(dug, now)
+        "${minutes.coerceAtLeast(1)}분"
     }.getOrDefault("")
 }

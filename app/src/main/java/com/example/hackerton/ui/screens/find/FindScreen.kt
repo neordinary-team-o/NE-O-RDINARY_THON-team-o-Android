@@ -281,12 +281,13 @@ fun FindScreen(
                                 val discoveredAt = LocalDateTime.now()
                                     .truncatedTo(ChronoUnit.SECONDS)
                                     .toString()
+                                // 우선 로컬에 기록 (오프라인이거나 API 실패해도 화면에는 보임)
                                 DiscoveredSongsStore.add(
                                     context,
                                     song.copy(discoveredAt = discoveredAt),
                                 )
                                 try {
-                                    Api.service.registerDig(
+                                    val resp = Api.service.registerDig(
                                         DigRequest(
                                             userId = DeviceId.userId(context),
                                             videoId = song.videoId,
@@ -298,6 +299,19 @@ fun FindScreen(
                                             comment = "",
                                         )
                                     )
+                                    // 서버 데이터로 enrich (snapshot/current viewcount, growthRate 등)
+                                    resp.data?.let { dig ->
+                                        DiscoveredSongsStore.add(
+                                            context,
+                                            song.copy(
+                                                discoveredAt = dig.dugAt ?: discoveredAt,
+                                                snapshotViewCount = dig.snapshotViewCount,
+                                                currentViewCount = dig.currentViewCount,
+                                                growthRate = dig.growthRate,
+                                                achievementBadge = dig.achievementBadge,
+                                            ),
+                                        )
+                                    }
                                 } catch (_: HttpException) {
                                     // 409(이미 등록) 포함 - 로컬 저장은 그대로 두고 진행
                                 } catch (_: Exception) {
