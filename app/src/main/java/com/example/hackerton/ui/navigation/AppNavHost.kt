@@ -102,6 +102,7 @@ fun AppNavHost(
                 narrativeMessage = detail?.narrativeMessage,
                 painter = painter,
                 onBack = { navController.popBackStack() },
+                isLoading = detail == null && digId != null,
             )
         }
         composable(

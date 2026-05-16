@@ -2,7 +2,6 @@ package com.example.hackerton.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.hackerton.data.local.DiscoveredSongsStore
 import com.example.hackerton.data.model.DigDetailResponse
 import com.example.hackerton.data.model.DigListItem
 import com.example.hackerton.data.model.DigListResponse
@@ -12,13 +11,10 @@ import com.example.hackerton.data.model.SongSearchResponse
 import com.example.hackerton.data.network.Api
 import com.example.hackerton.data.network.ApiService
 import com.example.hackerton.util.DeviceId
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import retrofit2.HttpException
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 sealed interface SearchResult {
     data class Success(val song: SongSearchResponse) : SearchResult
@@ -55,9 +51,6 @@ class SongRepository private constructor(
     private val context: Context,
     private val api: ApiService,
 ) {
-    val discoveredSongs: Flow<List<SongSearchResponse>> =
-        DiscoveredSongsStore.observe(context)
-
     // 발굴 성공 후 HomeScreen 등 외부 화면이 리스트를 다시 받아오도록 알리는 신호.
     // 값 자체엔 의미 없고 변경 자체가 트리거.
     private val _digsInvalidated = MutableStateFlow(0)
@@ -82,11 +75,6 @@ class SongRepository private constructor(
     }
 
     suspend fun dig(song: SongSearchResponse): DigResult {
-        val discoveredAt = LocalDateTime.now()
-            .truncatedTo(ChronoUnit.SECONDS)
-            .toString()
-        // 우선 로컬에 기록 (오프라인이거나 API 실패해도 화면에는 반영)
-        DiscoveredSongsStore.add(context, song.copy(discoveredAt = discoveredAt))
         val userId = DeviceId.userId(context)
         Log.d(TAG, "dig() request userId=$userId videoId=${song.videoId} title=${song.title}")
         return try {
@@ -102,22 +90,8 @@ class SongRepository private constructor(
                     comment = "",
                 )
             )
-            Log.d(TAG, "dig() response success=${resp.success} digId=${resp.data?.digId} dugAt=${resp.data?.dugAt} error=${resp.error}")
-            resp.data?.let { dig ->
-                DiscoveredSongsStore.add(
-                    context,
-                    song.copy(
-                        discoveredAt = dig.dugAt ?: discoveredAt,
-                        snapshotViewCount = dig.snapshotViewCount,
-                        currentViewCount = dig.currentViewCount,
-                        growthRate = dig.growthRate,
-                        achievementBadge = dig.achievementBadge,
-                        digId = dig.digId,
-                    ),
-                )
-            }
+            Log.d(TAG, "dig() response success=${resp.success} digId=${resp.data?.digId} error=${resp.error}")
             _digsInvalidated.value = _digsInvalidated.value + 1
-            Log.d(TAG, "dig() invalidated digs, new signal=${_digsInvalidated.value}")
             DigResult.Success
         } catch (e: HttpException) {
             Log.e(TAG, "dig() HttpException code=${e.code()} msg=${e.message()}", e)

@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import android.util.Log
-import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,28 +84,22 @@ fun HomeScreen(
     // ── 검색 모드: keyword → 결과 ──
     var searchResults by remember { mutableStateOf<List<DigListItem>>(emptyList()) }
 
-    // 1) Repository가 dig 성공 후 직접 알려주는 신호 — 가장 확실한 invalidate 경로
+    // dig 성공 후 Repository가 발화하는 invalidation 신호.
+    // 캐시 비우고 page 0으로 스크롤해서 stale pagerState 문제(이전 페이지 인덱스 잔류)를 막는다.
     val digsInvalidated by repo.digsInvalidated.collectAsState()
     LaunchedEffect(digsInvalidated) {
-        Log.d("HomeScreen", "digsInvalidated changed -> $digsInvalidated (will clear cache if > 0)")
         if (digsInvalidated > 0) {
+            Log.d("HomeScreen", "invalidated -> clear cache + scroll to page 0")
             fetchedPages.clear()
             totalPages = 0
+            pagerState.scrollToPage(0)
         }
-    }
-    // 2) 다른 경로(앱 백그라운드 → 복귀 등)에서 resume 시 안전망
-    LifecycleResumeEffect(Unit) {
-        Log.d("HomeScreen", "onResume -> clearing cache")
-        fetchedPages.clear()
-        totalPages = 0
-        onPauseOrDispose { }
     }
 
     // 일반 모드에서만 페이지별 fetch (검색 중이면 페이저는 비활성)
     LaunchedEffect(pagerState.currentPage, totalPages, isSearching) {
         if (isSearching) return@LaunchedEffect
         val current = pagerState.currentPage
-        Log.d("HomeScreen", "fetch trigger page=$current totalPages=$totalPages cached=${fetchedPages.containsKey(current)}")
         if (fetchedPages.containsKey(current)) return@LaunchedEffect
         when (val r = repo.listDigs(current)) {
             is ListDigsResult.Success -> {
@@ -201,7 +194,7 @@ fun HomeScreen(
                 style = Heading,
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
 
             if (isSearching) {
                 // 검색 모드: 1페이지로 결과 표시 (큰 슬롯부터 순서대로 채움)

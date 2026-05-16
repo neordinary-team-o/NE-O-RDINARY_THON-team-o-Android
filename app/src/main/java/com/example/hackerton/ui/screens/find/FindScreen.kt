@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.SubcomposeAsyncImage
 import com.example.hackerton.R
+import android.widget.Toast
 import com.example.hackerton.data.model.SongSearchResponse
+import com.example.hackerton.data.repository.DigResult
 import com.example.hackerton.data.repository.SearchResult
 import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.components.AppTextField
@@ -71,6 +73,7 @@ fun FindScreen(
     var query by remember { mutableStateOf(initialQuery) }
     var showChallengePopup by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var isDigging by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<SongSearchResponse?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -267,14 +270,21 @@ fun FindScreen(
                     thumbnailUrl = song?.thumbnailUrl.orEmpty(),
                     onCloseClick = { showChallengePopup = false },
                     onConfirmClick = {
-                        if (song != null) {
-                            scope.launch {
-                                repo.dig(song)
-                                showChallengePopup = false
+                        if (song == null || isDigging) return@DigChallengePopup
+                        isDigging = true
+                        scope.launch {
+                            val msg = when (val r = repo.dig(song)) {
+                                DigResult.Success -> null
+                                DigResult.AlreadyRegistered -> "이미 발굴한 곡이에요"
+                                is DigResult.Error -> "발굴 실패: ${r.message}"
+                            }
+                            isDigging = false
+                            showChallengePopup = false
+                            if (msg != null) {
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            } else {
                                 onBack()
                             }
-                        } else {
-                            showChallengePopup = false
                         }
                     },
                 )
