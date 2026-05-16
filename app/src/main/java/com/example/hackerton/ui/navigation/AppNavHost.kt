@@ -53,7 +53,6 @@ fun AppNavHost(
         }
         composable(Route.Home.path) {
             HomeScreen(
-                onSearchSubmit = { q -> navController.navigate(Route.Find.build(q)) },
                 onSongClick = { id -> navController.navigate(Route.Share.build(id)) },
                 onAddClick = { navController.navigate(Route.Find.build("")) },
             )
@@ -136,12 +135,16 @@ fun AppNavHost(
 }
 
 private val DISCOVERY_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yy.MM.dd")
+private val SHORT_DATE_REGEX = Regex("""^\d{2}\.\d{2}\.\d{2}$""")
 
-private fun formatDiscoveryDate(iso: String?): String {
-    if (iso.isNullOrBlank()) return ""
+private fun formatDiscoveryDate(raw: String?): String {
+    if (raw.isNullOrBlank()) return ""
+    // 백엔드가 이미 "yy.MM.dd"로 보내면 그대로 사용 (현재 사양)
+    if (SHORT_DATE_REGEX.matches(raw)) return raw
+    // 혹시 ISO 형식으로 바뀌면 파싱
     return runCatching {
-        LocalDateTime.parse(iso).format(DISCOVERY_DATE_FORMAT)
+        LocalDateTime.parse(raw).format(DISCOVERY_DATE_FORMAT)
     }.recoverCatching {
-        java.time.LocalDate.parse(iso).format(DISCOVERY_DATE_FORMAT)
-    }.getOrDefault("")
+        java.time.LocalDate.parse(raw).format(DISCOVERY_DATE_FORMAT)
+    }.getOrDefault(raw) // 알 수 없는 포맷이면 원문 그대로 보여줌
 }

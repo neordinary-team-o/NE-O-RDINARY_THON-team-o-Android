@@ -24,7 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,7 +60,7 @@ fun ShareScreen(
     val snapshotLabel = snapshotViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
     val currentLabel = currentViewCount?.let { "${"%,d".format(it)}회" } ?: "-"
     val growthLabel = growthRate?.let { "${if (it >= 0) "+" else ""}${"%.3f".format(it)}%" } ?: "-"
-    val badgeLabel = formatBadge(achievementBadge)
+    val badgeLabel: String = formatBadge(achievementBadge)
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(R.drawable.img_share_background),
@@ -101,19 +105,36 @@ fun ShareScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(
+            // 제목에 '(' 가 있으면 그 앞까지를 메인 제목으로 쓰고, '('부터는 아래 줄에 작게 보여줌.
+            // 예: "마지막처럼 (Last Time)" -> "마지막처럼 한로로" / "(Last Time)"
+            val parenIdx = songTitle.indexOf('(')
+            val titleMain = if (parenIdx > 0) songTitle.substring(0, parenIdx).trimEnd() else songTitle
+            val titleSub = if (parenIdx > 0) songTitle.substring(parenIdx) else null
+
+            Column(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(
-                    text = songTitle,
-                    style = Title.copy(fontWeight = FontWeight.Bold, color = GrayWhite),
-                )
-                Text(
-                    text = artist,
-                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
-                )
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = titleMain,
+                        style = Title.copy(fontWeight = FontWeight.Bold, color = GrayWhite),
+                    )
+                    Text(
+                        text = artist,
+                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                    )
+                }
+                if (titleSub != null) {
+                    Text(
+                        text = titleSub,
+                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                    )
+                }
             }
 
             Spacer(Modifier.height(8.dp))
@@ -140,26 +161,24 @@ fun ShareScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            if (badgeLabel != null) {
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        "당신은",
-                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
-                    )
-                    Text(
-                        badgeLabel,
-                        style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
-                    )
-                }
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    "당신은",
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = Gray300),
+                )
+                Text(
+                    badgeLabel,
+                    style = LabelNormal.copy(fontWeight = FontWeight.SemiBold, color = GreenNormal),
+                )
             }
 
             Spacer(Modifier.weight(1f))
 
             Text(
-                text = narrativeMessage.orEmpty(),
+                text = highlightNarrative(narrativeMessage.orEmpty()),
                 style = LabelReading.copy(fontWeight = FontWeight.SemiBold, color = Gray200),
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
@@ -207,9 +226,31 @@ fun ShareScreen(
     }
 }
 
-private fun formatBadge(badge: String?): String? = when (badge) {
-    null, "" -> null
-    "TRENDSETTER" -> "Trend Setter!"
+/**
+ * "5,800만명", "8개월" 같은 숫자+단위 토큰을 GreenNormal로 강조.
+ * 주의: "12,400명"(snapshot)은 강조하지 않는다 — Figma 사양상 "만명"/"개월"만 대상.
+ */
+private val NARRATIVE_HIGHLIGHT_REGEX =
+    Regex("""\d[\d,]*(?:만명|만|억명|개월|년)""")
+
+private fun highlightNarrative(text: String): AnnotatedString = buildAnnotatedString {
+    if (text.isEmpty()) return@buildAnnotatedString
+    var cursor = 0
+    NARRATIVE_HIGHLIGHT_REGEX.findAll(text).forEach { m ->
+        if (m.range.first > cursor) append(text.substring(cursor, m.range.first))
+        withStyle(SpanStyle(color = GreenNormal)) { append(m.value) }
+        cursor = m.range.last + 1
+    }
+    if (cursor < text.length) append(text.substring(cursor))
+}
+
+/**
+ * achievementName 매핑.
+ * 백엔드가 null/빈 값을 보내면 기본 "Trend Setter!"로 표기 (디자인상 항상 노출).
+ */
+private fun formatBadge(badge: String?): String = when (badge) {
+    null, "" -> "Trend Setter!"
+    "TRENDSETTER", "TREND_SETTER" -> "Trend Setter!"
     "TREND_CATCHER" -> "Trend Catcher!"
     else -> badge
 }
