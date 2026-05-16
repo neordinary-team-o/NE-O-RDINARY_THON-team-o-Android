@@ -21,7 +21,6 @@ import com.example.hackerton.R
 import com.example.hackerton.data.model.DigDetailResponse
 import com.example.hackerton.data.repository.DigDetailResult
 import com.example.hackerton.data.repository.SongRepository
-import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
 import com.example.hackerton.ui.screens.login.LoginScreen
@@ -117,18 +116,6 @@ fun AppNavHost(
             val q = backStackEntry.arguments?.getString(Route.Find.ARG_QUERY).orEmpty()
             FindScreen(
                 initialQuery = q,
-                onBack = { navController.popBackStack() },
-            )
-        }
-        composable(
-            route = Route.Detail.path,
-            arguments = listOf(
-                navArgument(Route.Detail.ARG_ITEM_ID) { type = NavType.StringType },
-            ),
-        ) { backStackEntry ->
-            val itemId = backStackEntry.arguments?.getString(Route.Detail.ARG_ITEM_ID).orEmpty()
-            DetailScreen(
-                itemId = itemId,
                 onBack = { navController.popBackStack() },
             )
         }
