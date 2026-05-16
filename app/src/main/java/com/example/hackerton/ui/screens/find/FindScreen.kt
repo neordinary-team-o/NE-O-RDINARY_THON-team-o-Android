@@ -40,12 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.SubcomposeAsyncImage
 import com.example.hackerton.R
-import com.example.hackerton.data.local.DiscoveredSongsStore
-import com.example.hackerton.data.model.DigRequest
-import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
-import com.example.hackerton.data.network.Api
-import com.example.hackerton.util.DeviceId
+import com.example.hackerton.data.repository.SearchResult
+import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.components.BrandGradientBackground
@@ -62,11 +59,8 @@ import com.example.hackerton.ui.theme.Heading
 import com.example.hackerton.ui.theme.LabelNormal
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 
 @Composable
 fun FindScreen(
@@ -81,6 +75,7 @@ fun FindScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val repo = remember(context) { SongRepository.get(context) }
 
     LaunchedEffect(query) {
         val keyword = query.trim()
@@ -93,25 +88,21 @@ fun FindScreen(
         delay(400) // debounce
         isLoading = true
         errorMessage = null
-        try {
-            val resp = Api.service.searchSong(SongSearchRequest(keyword))
-            if (resp.success) {
-                result = resp.data
-                errorMessage = if (resp.data == null) "검색 결과가 없습니다." else null
-            } else {
-                result = null
-                errorMessage = resp.error?.message ?: "검색 결과가 없습니다."
+        when (val r = repo.search(keyword)) {
+            is SearchResult.Success -> {
+                result = r.song
+                errorMessage = null
             }
-        } catch (e: HttpException) {
-            result = null
-            errorMessage = if (e.code() == 404) "검색 결과가 없습니다."
-            else e.message ?: "검색 실패"
-        } catch (e: Exception) {
-            result = null
-            errorMessage = e.message ?: "네트워크 오류"
-        } finally {
-            isLoading = false
+            SearchResult.NotFound -> {
+                result = null
+                errorMessage = "검색 결과가 없습니다."
+            }
+            is SearchResult.Error -> {
+                result = null
+                errorMessage = r.message
+            }
         }
+        isLoading = false
     }
 
     BrandGradientBackground(modifier = modifier) {
@@ -136,7 +127,7 @@ fun FindScreen(
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(R.drawable.find_icon),
+                        painter = painterResource(R.drawable.ic_find),
                         contentDescription = null,
                         tint = GrayWhite,
                         modifier = Modifier.size(20.dp),
@@ -187,7 +178,7 @@ fun FindScreen(
                                 },
                                 error = {
                                     Image(
-                                        painter = painterResource(R.drawable.artist_big),
+                                        painter = painterResource(R.drawable.img_artist_placeholder),
                                         contentDescription = null,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize(),
@@ -254,7 +245,7 @@ fun FindScreen(
                     onClick = { showChallengePopup = true },
                     trailingIcon = {
                         Icon(
-                            painter = painterResource(R.drawable.mining_icon),
+                            painter = painterResource(R.drawable.ic_mining),
                             contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(18.dp),
@@ -278,45 +269,7 @@ fun FindScreen(
                     onConfirmClick = {
                         if (song != null) {
                             scope.launch {
-                                val discoveredAt = LocalDateTime.now()
-                                    .truncatedTo(ChronoUnit.SECONDS)
-                                    .toString()
-                                // 우선 로컬에 기록 (오프라인이거나 API 실패해도 화면에는 보임)
-                                DiscoveredSongsStore.add(
-                                    context,
-                                    song.copy(discoveredAt = discoveredAt),
-                                )
-                                try {
-                                    val resp = Api.service.registerDig(
-                                        DigRequest(
-                                            userId = DeviceId.userId(context),
-                                            videoId = song.videoId,
-                                            title = song.title,
-                                            artist = song.artist,
-                                            viewCount = song.viewCount,
-                                            uploadDate = song.uploadDate,
-                                            thumbnailUrl = song.thumbnailUrl,
-                                            comment = "",
-                                        )
-                                    )
-                                    // 서버 데이터로 enrich (snapshot/current viewcount, growthRate 등)
-                                    resp.data?.let { dig ->
-                                        DiscoveredSongsStore.add(
-                                            context,
-                                            song.copy(
-                                                discoveredAt = dig.dugAt ?: discoveredAt,
-                                                snapshotViewCount = dig.snapshotViewCount,
-                                                currentViewCount = dig.currentViewCount,
-                                                growthRate = dig.growthRate,
-                                                achievementBadge = dig.achievementBadge,
-                                            ),
-                                        )
-                                    }
-                                } catch (_: HttpException) {
-                                    // 409(이미 등록) 포함 - 로컬 저장은 그대로 두고 진행
-                                } catch (_: Exception) {
-                                    // 네트워크 실패 - 로컬 저장만 유지
-                                }
+                                repo.dig(song)
                                 showChallengePopup = false
                                 onBack()
                             }

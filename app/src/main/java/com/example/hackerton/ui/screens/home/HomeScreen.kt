@@ -44,8 +44,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.example.hackerton.R
-import com.example.hackerton.data.local.DiscoveredSongsStore
 import com.example.hackerton.data.model.SongSearchResponse
+import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.components.ArtistBigBlock
@@ -69,7 +69,8 @@ fun HomeScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
-    val discoveredSongs by remember(context) { DiscoveredSongsStore.observe(context) }
+    val repo = remember(context) { SongRepository.get(context) }
+    val discoveredSongs by remember(repo) { repo.discoveredSongs }
         .collectAsState(initial = emptyList())
     val pages = remember(discoveredSongs) {
         discoveredSongs.chunked(6).ifEmpty { listOf(emptyList()) }
@@ -89,7 +90,7 @@ fun HomeScreen(
             AppTopBar(
                 trailing = {
                     Image(
-                        painter = painterResource(R.drawable.plus_icon),
+                        painter = painterResource(R.drawable.ic_plus),
                         contentDescription = "추가",
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
@@ -118,7 +119,7 @@ fun HomeScreen(
                 ),
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(R.drawable.find_icon),
+                        painter = painterResource(R.drawable.ic_find),
                         contentDescription = null,
                         tint = GrayWhite,
                         modifier = Modifier.size(20.dp),

@@ -52,7 +52,7 @@ fun DigChallengePopup(
         // [레이어 1] 헤더 영역 (제목 + 닫기 버튼)
         Box(modifier = Modifier.fillMaxWidth()) {
             Image(
-                painter = painterResource(id = R.drawable.mining_text),
+                painter = painterResource(id = R.drawable.logo_mining_text),
                 contentDescription = "발굴 도전!",
                 contentScale = ContentScale.Fit, // 비율 깨짐 방지
                 modifier = Modifier
@@ -68,7 +68,7 @@ fun DigChallengePopup(
                     .size(24.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.x_icon), // 닫기 아이콘 리소스 연결
+                    painter = painterResource(id = R.drawable.ic_x), // 닫기 아이콘 리소스 연결
                     contentDescription = "닫기",
                     tint = GrayWhite // 아이콘 색상
                 )
@@ -82,9 +82,9 @@ fun DigChallengePopup(
             model = thumbnailUrl,
             contentDescription = "Album Art",
             contentScale = ContentScale.Crop,
-            placeholder = painterResource(id = R.drawable.artist_big),
-            error = painterResource(id = R.drawable.artist_big),
-            fallback = painterResource(id = R.drawable.artist_big),
+            placeholder = painterResource(id = R.drawable.img_artist_placeholder),
+            error = painterResource(id = R.drawable.img_artist_placeholder),
+            fallback = painterResource(id = R.drawable.img_artist_placeholder),
             modifier = Modifier
                 .size(160.dp)
                 .aspectRatio(1f)

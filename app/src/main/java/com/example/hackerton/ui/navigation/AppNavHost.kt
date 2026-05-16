@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil3.compose.rememberAsyncImagePainter
 import com.example.hackerton.R
-import com.example.hackerton.data.local.DiscoveredSongsStore
+import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
@@ -62,10 +62,11 @@ fun AppNavHost(
         ) { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString(Route.Share.ARG_ITEM_ID).orEmpty()
             val context = LocalContext.current
-            val discoveredSongs by remember(context) { DiscoveredSongsStore.observe(context) }
+            val repo = remember(context) { SongRepository.get(context) }
+            val discoveredSongs by remember(repo) { repo.discoveredSongs }
                 .collectAsState(initial = emptyList())
             val song = discoveredSongs.find { it.videoId == itemId }
-            val fallback = painterResource(R.drawable.artist_big)
+            val fallback = painterResource(R.drawable.img_artist_placeholder)
             val thumbnailUrl = song?.thumbnailUrl
             val painter = if (thumbnailUrl.isNullOrBlank()) {
                 fallback

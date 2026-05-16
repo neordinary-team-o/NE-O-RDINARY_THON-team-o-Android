@@ -61,7 +61,7 @@ fun ShareScreen(
     val badgeLabel = formatBadge(achievementBadge)
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(R.drawable.share_success_background),
+            painter = painterResource(R.drawable.img_share_background),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
@@ -80,7 +80,7 @@ fun ShareScreen(
                 .padding(horizontal = 20.dp),
         ) {
             AppTopBar(
-                logoRes = R.drawable.dig_success_logo,
+                logoRes = R.drawable.logo_dig_success,
                 logoContentDescription = "발굴 성공!",
                 onBack = onBack,
             )
@@ -236,7 +236,7 @@ private fun ShareScreenPreview() {
         currentViewCount = 58_000_000,
         growthRate = 4.723,
         achievementBadge = "TREND_CATCHER",
-        painter = painterResource(R.drawable.artist_big),
+        painter = painterResource(R.drawable.img_artist_placeholder),
         onBack = {},
     )
 }

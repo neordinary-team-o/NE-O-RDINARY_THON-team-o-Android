@@ -131,7 +131,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "검색",
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.find_icon),
+                        painter = painterResource(id = R.drawable.ic_find),
                         contentDescription = null,
                         tint = Gray600,
                         modifier = Modifier.size(20.dp),
@@ -145,7 +145,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "검색",
                 leadingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.find_icon),
+                        painter = painterResource(id = R.drawable.ic_find),
                         contentDescription = null,
                         tint = GrayWhite,
                         modifier = Modifier.size(20.dp),
@@ -167,7 +167,7 @@ private fun AppTextFieldPreview() {
                 placeholder = "",
                 trailingIcon = {
                     Icon(
-                        painter = painterResource(id = R.drawable.check_icon),
+                        painter = painterResource(id = R.drawable.ic_check),
                         contentDescription = "Valid",
                         tint = GreenNormal,
                         modifier = Modifier.size(20.dp),

@@ -26,7 +26,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
     ) {
         // 1. 배경 이미지 (.png 파일을 자동으로 인식해서 바닥에 깔아줍니다)
         Image(
-            painter = painterResource(id = R.drawable.splash_background),
+            painter = painterResource(id = R.drawable.img_splash_background),
             contentDescription = null,
             contentScale = ContentScale.Crop, // 화면 비율이 달라도 여백 없이 꽉 채우도록 설정
             modifier = Modifier.fillMaxSize()
