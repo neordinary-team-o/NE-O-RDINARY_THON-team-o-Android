@@ -75,18 +75,16 @@ fun DigChallengePopup(
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // ------------------------------------------------------------------
         // [레이어 2] 앨범 아트 이미지
         // ------------------------------------------------------------------
-        Image(
-            painter = painterResource(id = R.drawable.share_icon), // 실제 구현 시 앨범 이미지로 교체
-            contentDescription = "Album Art",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(160.dp)
-                .clip(RoundedCornerShape(28.dp))
+        ArtistBigBlock(
+            name = title, // 팝업으로 전달받은 곡 제목("강남스타일")을 그대로 넘겨줍니다.
+            painter = painterResource(id = R.drawable.share_icon), // 나중에 실제 앨범 에셋으로 교체
+            onClick = { /* 팝업 안에서는 이미지를 눌러도 동작이 필요 없다면 비워둡니다 */ },
+            modifier = Modifier.size(120.dp) // 피그마 시안에 맞게 160dp로 고정해주면 알아서 160x160 정사각형이 됩니다.
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -100,17 +98,16 @@ fun DigChallengePopup(
         ) {
             Text(
                 text = title,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = GrayWhite
+                style = Title.copy(
+                    fontWeight = FontWeight.Bold, // Title 폰트에 볼드체를 덧씌움
+                    color = GrayWhite             // 텍스트 색상 지정
+                )
             )
             Spacer(modifier = Modifier.width(8.dp))
+
             Text(
                 text = artist,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
-                color = Gray400,
-                modifier = Modifier.padding(bottom = 2.dp)
+                style = LabelNormal.copy()
             )
         }
 
@@ -121,17 +118,14 @@ fun DigChallengePopup(
         // ------------------------------------------------------------------
         Text(
             text = "발굴일 $discoveryDate",
-            fontSize = 13.sp,
-            color = Gray500
+            style = Caption.copy()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = "현재 조회수 $currentViews",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            color = Gray200
+            style = Caption.copy()
         )
 
         Spacer(modifier = Modifier.height(36.dp))
