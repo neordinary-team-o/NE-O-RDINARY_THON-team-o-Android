@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -78,7 +79,15 @@ fun HomeScreen(
     var totalPages by remember { mutableStateOf(0) }
     val pagerState = rememberPagerState(pageCount = { maxOf(totalPages, 1) })
 
-    // 다른 화면(Find 등)에서 돌아왔을 때 발굴 결과를 반영하기 위해 resume마다 캐시 무효화
+    // 1) Repository가 dig 성공 후 직접 알려주는 신호 — 가장 확실한 invalidate 경로
+    val digsInvalidated by repo.digsInvalidated.collectAsState()
+    LaunchedEffect(digsInvalidated) {
+        if (digsInvalidated > 0) {
+            fetchedPages.clear()
+            totalPages = 0
+        }
+    }
+    // 2) 다른 경로(앱 백그라운드 → 복귀 등)에서 resume 시 안전망
     LifecycleResumeEffect(Unit) {
         fetchedPages.clear()
         totalPages = 0

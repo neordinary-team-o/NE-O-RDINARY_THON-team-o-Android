@@ -11,6 +11,9 @@ import com.example.hackerton.data.network.Api
 import com.example.hackerton.data.network.ApiService
 import com.example.hackerton.util.DeviceId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import retrofit2.HttpException
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -47,6 +50,11 @@ class SongRepository private constructor(
 ) {
     val discoveredSongs: Flow<List<SongSearchResponse>> =
         DiscoveredSongsStore.observe(context)
+
+    // 발굴 성공 후 HomeScreen 등 외부 화면이 리스트를 다시 받아오도록 알리는 신호.
+    // 값 자체엔 의미 없고 변경 자체가 트리거.
+    private val _digsInvalidated = MutableStateFlow(0)
+    val digsInvalidated: StateFlow<Int> = _digsInvalidated.asStateFlow()
 
     suspend fun search(keyword: String): SearchResult {
         val trimmed = keyword.trim()
@@ -98,6 +106,7 @@ class SongRepository private constructor(
                     ),
                 )
             }
+            _digsInvalidated.value = _digsInvalidated.value + 1
             DigResult.Success
         } catch (e: HttpException) {
             if (e.code() == 409) DigResult.AlreadyRegistered
