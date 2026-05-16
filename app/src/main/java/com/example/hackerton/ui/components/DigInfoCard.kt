@@ -47,7 +47,7 @@ fun DigInfoCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Gray900) // 디자인 토큰 적용
+            .background(Gray900.copy(alpha = 0.65f))
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
         // [상단 레이아웃] 곡명 + 아티스트명 및 우측 컨트롤 버튼 셋
