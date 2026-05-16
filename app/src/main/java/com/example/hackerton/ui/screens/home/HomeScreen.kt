@@ -29,7 +29,7 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BaseScreen(
-        title = "Hackerton",
+        title = "Hackathon",
         isLoading = uiState.isLoading,
         errorMessage = uiState.errorMessage,
         onErrorShown = viewModel::clearError,
