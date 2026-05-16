@@ -20,12 +20,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.hackerton.ui.theme.*
 
 enum class DigButtonVariant(val backgroundColor: Color, val contentColor: Color) {
-    BrightGreen(backgroundColor = Color(0xFF82F282), contentColor = Color(0xFF121212)),
-    DeepGreen(backgroundColor = Color(0xFF5EC45E), contentColor = Color(0xFF121212)),
-    White(backgroundColor = Color(0xFFFFFFFF), contentColor = Color(0xFF121212)),
-    Gray(backgroundColor = Color(0xFFDCDCE4), contentColor = Color(0xFF757575))
+    // 디자이너님이 정의해주신 토큰 변수로 색상 재지정
+    BrightGreen(backgroundColor = GreenNormal, contentColor = GrayBlack),
+    DeepGreen(backgroundColor = GreenDark, contentColor = GrayBlack),
+    White(backgroundColor = GrayWhite, contentColor = GrayBlack),
+    Gray(backgroundColor = Gray200, contentColor = Gray600)
 }
 
 @Composable
@@ -37,16 +44,16 @@ fun DigButton(
     enabled: Boolean = true,
     showArrow: Boolean = false
 ) {
-    // Gray 변형이거나 enabled가 false일 때의 컬러 분기 처리
+    // 버튼이 비활성화(enabled = false)되면 자동으로 Gray 토큰 스타일로 전환
     val currentVariant = if (!enabled) DigButtonVariant.Gray else variant
 
     Button(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(56.dp), // 터치 영역 및 시각적 임팩트를 위한 표준 높이
+            .height(56.dp),
         enabled = enabled,
-        shape = CircleShape, // 이미지의 완전한 라운드 캡슐 형태 구현
+        shape = CircleShape,
         colors = ButtonDefaults.buttonColors(
             containerColor = currentVariant.backgroundColor,
             contentColor = currentVariant.contentColor,
@@ -76,3 +83,83 @@ fun DigButton(
         }
     }
 }
+
+    @Preview(name = "DigButton Variants Preview", showBackground = true)
+    @Composable
+    fun DigButtonGridPreview() {
+        // 하드코딩된 Color(0xFF121212) 대신 디자이너님의 GrayBlack 토큰으로 배경 재지정
+        Column(
+            modifier = Modifier
+                .background(GrayBlack)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 1행: BrightGreen (좌/우)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.BrightGreen
+                )
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.BrightGreen,
+                    showArrow = true
+                )
+            }
+
+            // 2행: DeepGreen (좌/우)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.DeepGreen
+                )
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.DeepGreen,
+                    showArrow = true
+                )
+            }
+
+            // 3행: White (좌/우)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.White
+                )
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.White,
+                    showArrow = true
+                )
+            }
+
+            // 4행: Gray / Disabled (좌/우)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.Gray
+                )
+                DigButton(
+                    text = "다음으로",
+                    onClick = {},
+                    modifier = Modifier.weight(1f),
+                    variant = DigButtonVariant.Gray,
+                    showArrow = true
+                )
+            }
+        }
+    }
