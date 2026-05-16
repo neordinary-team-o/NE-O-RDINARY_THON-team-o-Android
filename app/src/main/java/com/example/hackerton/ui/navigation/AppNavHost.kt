@@ -3,19 +3,27 @@ package com.example.hackerton.ui.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.compose.ui.res.painterResource
+import coil3.compose.rememberAsyncImagePainter
 import com.example.hackerton.R
+import com.example.hackerton.data.local.DiscoveredSongsStore
 import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
 import com.example.hackerton.ui.screens.login.LoginScreen
 import com.example.hackerton.ui.screens.share.ShareScreen
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AppNavHost(
@@ -53,13 +61,29 @@ fun AppNavHost(
             ),
         ) { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString(Route.Share.ARG_ITEM_ID).orEmpty()
+            val context = LocalContext.current
+            val discoveredSongs by remember(context) { DiscoveredSongsStore.observe(context) }
+                .collectAsState(initial = emptyList())
+            val song = discoveredSongs.find { it.videoId == itemId }
+            val fallback = painterResource(R.drawable.artist_big)
+            val thumbnailUrl = song?.thumbnailUrl
+            val painter = if (thumbnailUrl.isNullOrBlank()) {
+                fallback
+            } else {
+                rememberAsyncImagePainter(
+                    model = thumbnailUrl,
+                    placeholder = fallback,
+                    error = fallback,
+                    fallback = fallback,
+                )
+            }
             ShareScreen(
-                songTitle = itemId,
-                artist = "한로로",
-                discoveryDate = "24.03.15",
+                songTitle = song?.title ?: itemId,
+                artist = song?.artist ?: "",
+                discoveryDate = formatDiscoveryDate(song?.discoveredAt),
                 elapsedTime = "8개월",
                 growthRate = "+4.723%",
-                painter = painterResource(R.drawable.artist_big),
+                painter = painter,
                 onBack = { navController.popBackStack() },
             )
         }
@@ -91,4 +115,13 @@ fun AppNavHost(
             )
         }
     }
+}
+
+private val DISCOVERY_DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("yy.MM.dd")
+
+private fun formatDiscoveryDate(iso: String?): String {
+    if (iso.isNullOrBlank()) return ""
+    return runCatching {
+        LocalDateTime.parse(iso).format(DISCOVERY_DATE_FORMAT)
+    }.getOrDefault("")
 }

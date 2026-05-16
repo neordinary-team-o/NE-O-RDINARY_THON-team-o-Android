@@ -15,4 +15,5 @@ data class SongSearchResponse(
     val viewCount: Long,
     val uploadDate: String,
     val thumbnailUrl: String,
+    val discoveredAt: String? = null,
 )

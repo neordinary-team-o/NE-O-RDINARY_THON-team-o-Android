@@ -49,9 +49,11 @@ import androidx.compose.ui.window.Dialog
 import coil3.compose.SubcomposeAsyncImage
 import com.example.hackerton.R
 import com.example.hackerton.data.local.DiscoveredSongsStore
+import com.example.hackerton.data.model.DigRequest
 import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
 import com.example.hackerton.data.network.Api
+import com.example.hackerton.util.DeviceId
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.DigButton
 import com.example.hackerton.ui.components.DigChallengePopup
@@ -69,7 +71,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun FindScreen(
@@ -313,7 +317,31 @@ fun FindScreen(
                     onConfirmClick = {
                         if (song != null) {
                             scope.launch {
-                                DiscoveredSongsStore.add(context, song)
+                                val discoveredAt = LocalDateTime.now()
+                                    .truncatedTo(ChronoUnit.SECONDS)
+                                    .toString()
+                                DiscoveredSongsStore.add(
+                                    context,
+                                    song.copy(discoveredAt = discoveredAt),
+                                )
+                                try {
+                                    Api.service.registerDig(
+                                        DigRequest(
+                                            userId = DeviceId.userId(context),
+                                            videoId = song.videoId,
+                                            title = song.title,
+                                            artist = song.artist,
+                                            viewCount = song.viewCount,
+                                            uploadDate = song.uploadDate,
+                                            thumbnailUrl = song.thumbnailUrl,
+                                            comment = "",
+                                        )
+                                    )
+                                } catch (_: HttpException) {
+                                    // 409(이미 등록) 포함 - 로컬 저장은 그대로 두고 진행
+                                } catch (_: Exception) {
+                                    // 네트워크 실패 - 로컬 저장만 유지
+                                }
                                 showChallengePopup = false
                                 onBack()
                             }
