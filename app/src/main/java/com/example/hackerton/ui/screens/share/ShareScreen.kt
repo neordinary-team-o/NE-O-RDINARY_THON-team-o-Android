@@ -15,10 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hackerton.R
+import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.theme.Caption
 import com.example.hackerton.ui.theme.Gray200
 import com.example.hackerton.ui.theme.Gray300
@@ -75,24 +72,11 @@ fun ShareScreen(
                 .navigationBarsPadding()
                 .padding(horizontal = 20.dp),
         ) {
-            // Header: ← + "발굴 성공!"
-            Box(modifier = Modifier.fillMaxWidth()) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.align(Alignment.CenterStart),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로",
-                        tint = GrayWhite,
-                    )
-                }
-                Image(
-                    painter = painterResource(R.drawable.dig_success_logo),
-                    contentDescription = "발굴 성공!",
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            }
+            AppTopBar(
+                logoRes = R.drawable.dig_success_logo,
+                logoContentDescription = "발굴 성공!",
+                onBack = onBack,
+            )
 
             Spacer(Modifier.height(55.dp))
 

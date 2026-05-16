@@ -47,6 +47,7 @@ import com.example.hackerton.R
 import com.example.hackerton.data.local.DiscoveredSongsStore
 import com.example.hackerton.data.model.SongSearchResponse
 import com.example.hackerton.ui.components.AppTextField
+import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.components.ArtistBigBlock
 import com.example.hackerton.ui.components.ArtistBigBlockEmpty
 import com.example.hackerton.ui.components.ArtistSmallBlock
@@ -85,22 +86,18 @@ fun HomeScreen(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            // Header
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Image(
-                    painter = painterResource(R.drawable.logo_hongdae),
-                    contentDescription = "홍대병동",
-                    modifier = Modifier.align(Alignment.Center),
-                )
-                Image(
-                    painter = painterResource(R.drawable.plus_icon),
-                    contentDescription = "추가",
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(24.dp)
-                        .clickable(onClick = onAddClick),
-                )
-            }
+            AppTopBar(
+                trailing = {
+                    Image(
+                        painter = painterResource(R.drawable.plus_icon),
+                        contentDescription = "추가",
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(24.dp)
+                            .clickable(onClick = onAddClick),
+                    )
+                },
+            )
 
             Spacer(Modifier.height(20.dp))
 

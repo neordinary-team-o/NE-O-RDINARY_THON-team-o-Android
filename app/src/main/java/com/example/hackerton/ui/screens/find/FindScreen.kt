@@ -17,11 +17,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +47,7 @@ import com.example.hackerton.data.model.SongSearchResponse
 import com.example.hackerton.data.network.Api
 import com.example.hackerton.util.DeviceId
 import com.example.hackerton.ui.components.AppTextField
+import com.example.hackerton.ui.components.AppTopBar
 import com.example.hackerton.ui.components.BrandGradientBackground
 import com.example.hackerton.ui.components.CtaButton
 import com.example.hackerton.ui.components.DigChallengePopup
@@ -127,23 +125,7 @@ fun FindScreen(
             Spacer(Modifier.height(16.dp))
 
             // Header
-            Box(modifier = Modifier.fillMaxWidth()) {
-                IconButton(
-                    onClick = onBack,
-                    modifier = Modifier.align(Alignment.CenterStart),
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "뒤로",
-                        tint = GrayWhite,
-                    )
-                }
-                Image(
-                    painter = painterResource(R.drawable.logo_hongdae),
-                    contentDescription = "홍대병동",
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            }
+            AppTopBar(onBack = onBack)
 
             Spacer(Modifier.height(20.dp))
 
