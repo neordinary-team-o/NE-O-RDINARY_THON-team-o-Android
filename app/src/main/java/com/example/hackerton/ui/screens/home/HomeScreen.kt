@@ -253,6 +253,10 @@ fun HomeScreen(
                 growthRate = "+4,723%",
                 discoveryDate = "24.03.15",
                 elapsedTime = "8개월 경과",
+                commentValue = "",
+                onCommentValueChange = {},
+                isCommentSubmitted = false,
+                onCommentActionClick = {},
                 onShareClick = { showShare = true },
                 onCloseClick = { viewModel.clearSelection() },
             )
