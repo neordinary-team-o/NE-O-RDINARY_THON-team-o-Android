@@ -57,7 +57,7 @@ fun ShareScreen(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(R.drawable.image_9),
+            painter = painterResource(R.drawable.share_success_background),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
