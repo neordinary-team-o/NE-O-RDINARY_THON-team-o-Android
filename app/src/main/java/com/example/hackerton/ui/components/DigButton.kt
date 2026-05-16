@@ -24,7 +24,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.hackerton.R
 import com.example.hackerton.ui.theme.*
 
 enum class DigButtonVariant(val backgroundColor: Color, val contentColor: Color) {
@@ -75,8 +77,12 @@ fun DigButton(
             if (showArrow) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    // 🔥 painterResource를 사용하여 drawable 폴더의 arrow_icon을 로드합니다.
+                    painter = painterResource(id = R.drawable.arrow_icon),
                     contentDescription = "Move Next",
+                    // 디자이너님이 주신 아이콘 자체 색상을 입히기 위해 tint는 Color.Unspecified로 주거나 생략할 수 있습니다.
+                    // 만약 버튼 글자색(contentColor)과 강제로 맞추고 싶다면 tint = currentVariant.contentColor 를 주면 됩니다.
+                    tint = Color.Unspecified,
                     modifier = Modifier.height(18.dp).width(18.dp)
                 )
             }
