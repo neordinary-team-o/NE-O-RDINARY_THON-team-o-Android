@@ -65,7 +65,9 @@ fun AppNavHost(
             val repo = remember(context) { SongRepository.get(context) }
             val discoveredSongs by remember(repo) { repo.discoveredSongs }
                 .collectAsState(initial = emptyList())
-            val song = discoveredSongs.find { it.videoId == itemId }
+            // itemId는 HomeScreen에서 digId.toString(), FindScreen 시연용으론 videoId일 수 있음
+            val song = discoveredSongs.find { it.digId?.toString() == itemId }
+                ?: discoveredSongs.find { it.videoId == itemId }
             val fallback = painterResource(R.drawable.img_artist_placeholder)
             val thumbnailUrl = song?.thumbnailUrl
             val painter = if (thumbnailUrl.isNullOrBlank()) {

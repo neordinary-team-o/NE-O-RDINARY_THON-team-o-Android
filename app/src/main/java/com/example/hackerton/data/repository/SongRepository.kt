@@ -2,6 +2,7 @@ package com.example.hackerton.data.repository
 
 import android.content.Context
 import com.example.hackerton.data.local.DiscoveredSongsStore
+import com.example.hackerton.data.model.DigListResponse
 import com.example.hackerton.data.model.DigRequest
 import com.example.hackerton.data.model.SongSearchRequest
 import com.example.hackerton.data.model.SongSearchResponse
@@ -23,6 +24,11 @@ sealed interface DigResult {
     data object Success : DigResult
     data object AlreadyRegistered : DigResult
     data class Error(val message: String) : DigResult
+}
+
+sealed interface ListDigsResult {
+    data class Success(val data: DigListResponse) : ListDigsResult
+    data class Error(val message: String) : ListDigsResult
 }
 
 /**
@@ -82,6 +88,7 @@ class SongRepository private constructor(
                         currentViewCount = dig.currentViewCount,
                         growthRate = dig.growthRate,
                         achievementBadge = dig.achievementBadge,
+                        digId = dig.digId,
                     ),
                 )
             }
@@ -91,6 +98,22 @@ class SongRepository private constructor(
             else DigResult.Error(e.message ?: "발굴 등록 실패")
         } catch (e: Exception) {
             DigResult.Error(e.message ?: "네트워크 오류")
+        }
+    }
+
+    suspend fun listDigs(page: Int): ListDigsResult {
+        return try {
+            val userId = DeviceId.userId(context)
+            val resp = api.listDigs(userId = userId, page = page)
+            if (resp.success && resp.data != null) {
+                ListDigsResult.Success(resp.data)
+            } else {
+                ListDigsResult.Error(resp.error?.message ?: "발굴 목록 조회 실패")
+            }
+        } catch (e: HttpException) {
+            ListDigsResult.Error(e.message ?: "발굴 목록 조회 실패")
+        } catch (e: Exception) {
+            ListDigsResult.Error(e.message ?: "네트워크 오류")
         }
     }
 

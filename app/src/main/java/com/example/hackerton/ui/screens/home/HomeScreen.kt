@@ -25,8 +25,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,7 +45,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.rememberAsyncImagePainter
 import com.example.hackerton.R
-import com.example.hackerton.data.model.SongSearchResponse
+import com.example.hackerton.data.model.DigListItem
+import com.example.hackerton.data.repository.ListDigsResult
 import com.example.hackerton.data.repository.SongRepository
 import com.example.hackerton.ui.components.AppTextField
 import com.example.hackerton.ui.components.AppTopBar
@@ -70,12 +72,24 @@ fun HomeScreen(
 
     val context = LocalContext.current
     val repo = remember(context) { SongRepository.get(context) }
-    val discoveredSongs by remember(repo) { repo.discoveredSongs }
-        .collectAsState(initial = emptyList())
-    val pages = remember(discoveredSongs) {
-        discoveredSongs.chunked(6).ifEmpty { listOf(emptyList()) }
+
+    val fetchedPages = remember { mutableStateMapOf<Int, List<DigListItem>>() }
+    var totalPages by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState(pageCount = { maxOf(totalPages, 1) })
+
+    LaunchedEffect(pagerState.currentPage, totalPages) {
+        val current = pagerState.currentPage
+        if (fetchedPages.containsKey(current)) return@LaunchedEffect
+        when (val r = repo.listDigs(current)) {
+            is ListDigsResult.Success -> {
+                fetchedPages[current] = r.data.content
+                if (r.data.totalPages != totalPages) totalPages = r.data.totalPages
+            }
+            is ListDigsResult.Error -> {
+                fetchedPages[current] = emptyList()
+            }
+        }
     }
-    val pagerState = rememberPagerState(pageCount = { pages.size })
 
     BrandGradientBackground(modifier = modifier) {
         Column(
@@ -143,12 +157,11 @@ fun HomeScreen(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth(),
             ) { pageIndex ->
-                val pageSongs = pages[pageIndex]
+                val items = fetchedPages[pageIndex].orEmpty()
                 Column {
-                    // Row 1: big left + 2 small stacked right
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         BigSlot(
-                            song = pageSongs.getOrNull(0),
+                            item = items.getOrNull(0),
                             onSongClick = onSongClick,
                             modifier = Modifier.weight(2f),
                         )
@@ -157,12 +170,12 @@ fun HomeScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             SmallSlot(
-                                song = pageSongs.getOrNull(1),
+                                item = items.getOrNull(1),
                                 onSongClick = onSongClick,
                                 modifier = Modifier.fillMaxWidth(),
                             )
                             SmallSlot(
-                                song = pageSongs.getOrNull(2),
+                                item = items.getOrNull(2),
                                 onSongClick = onSongClick,
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -171,20 +184,19 @@ fun HomeScreen(
 
                     Spacer(Modifier.height(8.dp))
 
-                    // Row 2: 3 small
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SmallSlot(
-                            song = pageSongs.getOrNull(3),
+                            item = items.getOrNull(3),
                             onSongClick = onSongClick,
                             modifier = Modifier.weight(1f),
                         )
                         SmallSlot(
-                            song = pageSongs.getOrNull(4),
+                            item = items.getOrNull(4),
                             onSongClick = onSongClick,
                             modifier = Modifier.weight(1f),
                         )
                         SmallSlot(
-                            song = pageSongs.getOrNull(5),
+                            item = items.getOrNull(5),
                             onSongClick = onSongClick,
                             modifier = Modifier.weight(1f),
                         )
@@ -192,13 +204,13 @@ fun HomeScreen(
                 }
             }
 
-            if (pages.size > 1) {
+            if (totalPages > 1) {
                 Spacer(Modifier.height(16.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 ) {
-                    repeat(pages.size) { i ->
+                    repeat(totalPages) { i ->
                         Box(
                             modifier = Modifier
                                 .size(8.dp)
@@ -217,15 +229,15 @@ fun HomeScreen(
 
 @Composable
 private fun BigSlot(
-    song: SongSearchResponse?,
+    item: DigListItem?,
     onSongClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (song != null) {
+    if (item != null) {
         ArtistBigBlock(
-            name = song.title,
-            painter = rememberAsyncImagePainter(song.thumbnailUrl),
-            onClick = { onSongClick(song.videoId) },
+            name = item.title,
+            painter = rememberAsyncImagePainter(item.thumbnailUrl),
+            onClick = { onSongClick(item.digId.toString()) },
             modifier = modifier,
         )
     } else {
@@ -235,15 +247,15 @@ private fun BigSlot(
 
 @Composable
 private fun SmallSlot(
-    song: SongSearchResponse?,
+    item: DigListItem?,
     onSongClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (song != null) {
+    if (item != null) {
         ArtistSmallBlock(
-            name = song.title,
-            painter = rememberAsyncImagePainter(song.thumbnailUrl),
-            onClick = { onSongClick(song.videoId) },
+            name = item.title,
+            painter = rememberAsyncImagePainter(item.thumbnailUrl),
+            onClick = { onSongClick(item.digId.toString()) },
             modifier = modifier,
         )
     } else {

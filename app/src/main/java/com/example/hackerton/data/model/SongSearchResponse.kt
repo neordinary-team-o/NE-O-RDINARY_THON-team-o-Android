@@ -21,4 +21,5 @@ data class SongSearchResponse(
     val currentViewCount: Long? = null,
     val growthRate: Double? = null,
     val achievementBadge: String? = null,
+    val digId: Long? = null,
 )
