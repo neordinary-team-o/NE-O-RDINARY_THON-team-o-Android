@@ -77,9 +77,8 @@ fun DigButton(
             if (showArrow) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    // 🔥 painterResource를 사용하여 drawable 폴더의 arrow_icon을 로드합니다.
-                    painter = painterResource(id = R.drawable.arrow_icon),
-                    contentDescription = "Move Next",
+                    painter = painterResource(id = R.drawable.mining_icon),
+                    contentDescription = "발굴",
                     // 디자이너님이 주신 아이콘 자체 색상을 입히기 위해 tint는 Color.Unspecified로 주거나 생략할 수 있습니다.
                     // 만약 버튼 글자색(contentColor)과 강제로 맞추고 싶다면 tint = currentVariant.contentColor 를 주면 됩니다.
                     tint = Color.Unspecified,
