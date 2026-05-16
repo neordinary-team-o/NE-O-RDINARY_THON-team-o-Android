@@ -1,6 +1,7 @@
 package com.example.hackerton.data.network
 
 import com.example.hackerton.data.model.ApiResponse
+import com.example.hackerton.data.model.DigDetailResponse
 import com.example.hackerton.data.model.DigListResponse
 import com.example.hackerton.data.model.DigRequest
 import com.example.hackerton.data.model.DigResponse
@@ -50,6 +51,9 @@ interface ApiService {
         @Query("userId") userId: String,
         @Query("page") page: Int,
     ): ApiResponse<DigListResponse>
+
+    @GET("digs/{digId}")
+    suspend fun getDig(@Path("digId") digId: Long): ApiResponse<DigDetailResponse>
 }
 
 object Api {

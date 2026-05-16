@@ -2,6 +2,7 @@ package com.example.hackerton.data.repository
 
 import android.content.Context
 import com.example.hackerton.data.local.DiscoveredSongsStore
+import com.example.hackerton.data.model.DigDetailResponse
 import com.example.hackerton.data.model.DigListResponse
 import com.example.hackerton.data.model.DigRequest
 import com.example.hackerton.data.model.SongSearchRequest
@@ -29,6 +30,11 @@ sealed interface DigResult {
 sealed interface ListDigsResult {
     data class Success(val data: DigListResponse) : ListDigsResult
     data class Error(val message: String) : ListDigsResult
+}
+
+sealed interface DigDetailResult {
+    data class Success(val data: DigDetailResponse) : DigDetailResult
+    data class Error(val message: String) : DigDetailResult
 }
 
 /**
@@ -114,6 +120,21 @@ class SongRepository private constructor(
             ListDigsResult.Error(e.message ?: "발굴 목록 조회 실패")
         } catch (e: Exception) {
             ListDigsResult.Error(e.message ?: "네트워크 오류")
+        }
+    }
+
+    suspend fun getDig(digId: Long): DigDetailResult {
+        return try {
+            val resp = api.getDig(digId)
+            if (resp.success && resp.data != null) {
+                DigDetailResult.Success(resp.data)
+            } else {
+                DigDetailResult.Error(resp.error?.message ?: "발굴 상세 조회 실패")
+            }
+        } catch (e: HttpException) {
+            DigDetailResult.Error(e.message ?: "발굴 상세 조회 실패")
+        } catch (e: Exception) {
+            DigDetailResult.Error(e.message ?: "네트워크 오류")
         }
     }
 

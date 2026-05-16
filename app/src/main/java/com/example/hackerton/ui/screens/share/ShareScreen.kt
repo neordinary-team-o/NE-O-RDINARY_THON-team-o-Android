@@ -24,10 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,6 +49,7 @@ fun ShareScreen(
     currentViewCount: Long?,
     growthRate: Double?,
     achievementBadge: String?,
+    narrativeMessage: String?,
     painter: Painter,
     onBack: () -> Unit,
 ) {
@@ -161,15 +159,7 @@ fun ShareScreen(
             Spacer(Modifier.weight(1f))
 
             Text(
-                text = buildAnnotatedString {
-                    append("당신이 ")
-                    withStyle(SpanStyle(color = GreenNormal)) { append(snapshotLabel) }
-                    append("이던 시절 발견한 음악이 지금 ")
-                    withStyle(SpanStyle(color = GreenNormal)) { append(currentLabel) }
-                    append("에게 재생되고 있습니다. 당신의 귀는 시대보다 ")
-                    withStyle(SpanStyle(color = GreenNormal)) { append(elapsedTime) }
-                    append(" 빨랐습니다.")
-                },
+                text = narrativeMessage.orEmpty(),
                 style = LabelReading.copy(fontWeight = FontWeight.SemiBold, color = Gray200),
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
@@ -236,6 +226,7 @@ private fun ShareScreenPreview() {
         currentViewCount = 58_000_000,
         growthRate = 4.723,
         achievementBadge = "TREND_CATCHER",
+        narrativeMessage = "당신이 14,205명이 듣던 시절 발견한 음악이 지금 58,000,000명에게 재생되고 있습니다. 당신의 귀는 시대보다 8개월 빨랐습니다.",
         painter = painterResource(R.drawable.img_artist_placeholder),
         onBack = {},
     )
