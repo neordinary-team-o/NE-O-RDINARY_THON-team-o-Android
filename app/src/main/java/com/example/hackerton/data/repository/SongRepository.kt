@@ -179,16 +179,28 @@ class SongRepository private constructor(
     }
 
     suspend fun getDig(digId: Long): DigDetailResult {
+        // 1) 성장률 재계산 트리거를 먼저 쏘고 (실패해도 detail은 계속 시도)
+        runCatching {
+            val gr = api.refreshGrowthRate(digId)
+            Log.d(TAG, "refreshGrowthRate($digId) success=${gr.success} error=${gr.error}")
+        }.onFailure { e ->
+            // 404/500이면 HttpException으로 떨어짐 — detail에서 다시 핸들링하게 두고 로그만
+            Log.w(TAG, "refreshGrowthRate($digId) failed: ${e.message}")
+        }
+        // 2) 최신 detail 가져오기
         return try {
             val resp = api.getDig(digId)
+            Log.d(TAG, "getDig($digId) success=${resp.success} error=${resp.error}")
             if (resp.success && resp.data != null) {
                 DigDetailResult.Success(resp.data)
             } else {
                 DigDetailResult.Error(resp.error?.message ?: "발굴 상세 조회 실패")
             }
         } catch (e: HttpException) {
+            Log.e(TAG, "getDig($digId) HttpException code=${e.code()}", e)
             DigDetailResult.Error(e.message ?: "발굴 상세 조회 실패")
         } catch (e: Exception) {
+            Log.e(TAG, "getDig($digId) exception", e)
             DigDetailResult.Error(e.message ?: "네트워크 오류")
         }
     }

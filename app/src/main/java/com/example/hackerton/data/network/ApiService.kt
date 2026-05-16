@@ -10,6 +10,7 @@ import com.example.hackerton.data.model.SongSearchResponse
 import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -54,6 +55,13 @@ interface ApiService {
 
     @GET("digs/{digId}")
     suspend fun getDig(@Path("digId") digId: Long): ApiResponse<DigDetailResponse>
+
+    /**
+     * 성장률 재계산 트리거 — 응답 data는 null. detail 조회 직전에 호출.
+     * 404: dig 없음, 500: YouTube API 실패.
+     */
+    @PATCH("digs/{digId}/growth-rate")
+    suspend fun refreshGrowthRate(@Path("digId") digId: Long): ApiResponse<String?>
 
     @GET("digs/me/search")
     suspend fun searchMyDigs(
