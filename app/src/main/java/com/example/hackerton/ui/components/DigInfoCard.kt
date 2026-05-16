@@ -1,24 +1,13 @@
 package com.example.hackerton.ui.components
 
-
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,14 +20,27 @@ import androidx.compose.ui.unit.sp
 import com.example.hackerton.R
 import com.example.hackerton.ui.theme.*
 
+/**
+ * [FullDigInfoCard]
+ * 네가 올린 상황별 대응 완벽판 [DigCommentInput]을 하단에 정확히 수용한 완전체 카드 컴포넌트
+ */
 @Composable
 fun DigInfoCard(
+    // 1. 대시보드 메타데이터
     title: String,
     artist: String,
     description: String,
     growthRate: String,
     discoveryDate: String,
     elapsedTime: String,
+
+    // 2. 🔥 하단 한줄평 컴포넌트 연동을 위한 상태 및 콜백 변수들
+    commentValue: String,
+    onCommentValueChange: (String) -> Unit,
+    isCommentSubmitted: Boolean,
+    onCommentActionClick: () -> Unit,
+
+    // 3. 컨트롤 인터랙션
     onShareClick: () -> Unit,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -47,16 +49,15 @@ fun DigInfoCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(Gray900.copy(alpha = 0.65f))
+            .background(Gray900.copy(alpha = 0.65f)) // 반투명 글래스모피즘 톤 유지
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        // [상단 레이아웃] 곡명 + 아티스트명 및 우측 컨트롤 버튼 셋
+        // [레이어 1] 상단 헤더 영역
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 텍스트 영역 묶음 (버튼 영역을 침범하지 않도록 weight(1f) 부여)
             Row(
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.weight(1f)
@@ -86,19 +87,16 @@ fun DigInfoCard(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            // 우측 아이콘 버튼 세트 (공유, 닫기)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onShareClick) {
                     Icon(
-                        // 🔥 기존 내장 라이브러리 대신 drawable의 share_icon을 로드합니다.
                         painter = painterResource(id = R.drawable.share_icon),
                         contentDescription = "공유하기",
-                        tint = GrayWhite // 디자인 시스템에 맞는 흰색 틴트 유지
+                        tint = GrayWhite
                     )
                 }
                 IconButton(onClick = onCloseClick) {
                     Icon(
-                        // 🔥 기존 내장 라이브러리 대신 drawable의 x_icon을 로드합니다.
                         painter = painterResource(id = R.drawable.x_icon),
                         contentDescription = "닫기",
                         tint = GrayWhite
@@ -109,7 +107,7 @@ fun DigInfoCard(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // [중단 레이아웃] 서사형 문구 및 유저 코멘트
+        // [레이어 2] 중단 서사형 문구
         Text(
             text = description,
             style = MaterialTheme.typography.bodyLarge.copy(
@@ -121,13 +119,12 @@ fun DigInfoCard(
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // [하단 레이아웃] 실시간 성장률 지표 및 발굴 타임라인 데이터
+        // [레이어 3] 하단 성장률 및 타임라인 데이터
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
         ) {
-            // 좌측: 성장률 수치 + 라벨 (Neon Green)
             Row(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -148,7 +145,6 @@ fun DigInfoCard(
                 )
             }
 
-            // 우측: 발굴 날짜 및 경과 시간 스택 정보
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -167,24 +163,55 @@ fun DigInfoCard(
                 )
             }
         }
+
+        // ------------------------------------------------------------------
+        // [레이어 4] 🔥 네가 올린 완벽한 DigCommentInput 컴포넌트 호출부
+        // ------------------------------------------------------------------
+        Spacer(modifier = Modifier.height(24.dp))
+
+        DigCommentInput(
+            value = commentValue,
+            onValueChange = onCommentValueChange,
+            isSubmitted = isCommentSubmitted,
+            onActionClick = onCommentActionClick,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
-@Preview(name = "Dig Info Card - Extreme Long Text Preview", showBackground = true)
+// ==========================================================================
+// 👁️ 완전체 통합 카드 상태 테스트 Preview
+// ==========================================================================
+@Preview(name = "Full Dig Info Card Combined Preview", showBackground = true, widthDp = 360)
 @Composable
-fun DigInfoCardLongTextPreview() {
+fun DigInfoCardPreview() {
+    var commentText by remember { mutableStateOf("") }
+    var isSubmitted by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .background(GrayBlack)
             .padding(16.dp)
     ) {
         DigInfoCard(
-            title = "0+0", // 엄청 긴 제목
-            artist = "한로로",      // 엄청 긴 아티스트명
+            title = "0+0",
+            artist = "한로로",
             description = "아무것도 가진 게 없는 우리라도, 서로가 함께라면 영원을 꿈꿀 수 있다는 위로와 청춘의 찬가.",
             growthRate = "+4,723%",
             discoveryDate = "24.03.15",
             elapsedTime = "8개월 경과",
+
+            commentValue = commentText,
+            onCommentValueChange = {
+                commentText = it
+                if (isSubmitted) isSubmitted = false // 수정 시작 시 자동으로 화살표 상태로 리턴
+            },
+            isCommentSubmitted = isSubmitted,
+            onCommentActionClick = {
+                if (commentText.isNotEmpty()) {
+                    isSubmitted = !isSubmitted // 등록 상태 토글 인터랙션
+                }
+            },
             onShareClick = {},
             onCloseClick = {}
         )
