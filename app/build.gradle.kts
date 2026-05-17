@@ -22,6 +22,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            // 해커톤용 임시 서명 — 정식 keystore 발급 전까진 debug 키로 서명해서 폰에 바로 설치 가능하게.
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

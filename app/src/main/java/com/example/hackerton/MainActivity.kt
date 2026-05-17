@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.* // 🔥 상태 관리를 위해 추가
 import com.example.hackerton.ui.navigation.AppNavHost
-import com.example.hackerton.ui.screens.SplashScreen // 🔥 우리가 만든 스플래시 임포트
+import com.example.hackerton.ui.screens.splash.SplashScreen
 import com.example.hackerton.ui.theme.HackertonTheme
 import kotlinx.coroutines.delay // 🔥 타이머를 위해 추가
 

@@ -15,9 +15,4 @@ sealed class Route(val path: String) {
         const val ARG_ITEM_ID = "itemId"
         fun build(itemId: String) = "share/${Uri.encode(itemId)}"
     }
-
-    data object Detail : Route("detail/{itemId}") {
-        const val ARG_ITEM_ID = "itemId"
-        fun build(itemId: String) = "detail/$itemId"
-    }
 }

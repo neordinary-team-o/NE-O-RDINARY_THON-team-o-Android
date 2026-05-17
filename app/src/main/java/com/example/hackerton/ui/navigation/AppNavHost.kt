@@ -21,7 +21,6 @@ import com.example.hackerton.R
 import com.example.hackerton.data.model.DigDetailResponse
 import com.example.hackerton.data.repository.DigDetailResult
 import com.example.hackerton.data.repository.SongRepository
-import com.example.hackerton.ui.screens.detail.DetailScreen
 import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
 import com.example.hackerton.ui.screens.login.LoginScreen
