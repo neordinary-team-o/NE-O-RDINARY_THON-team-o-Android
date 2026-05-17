@@ -25,12 +25,17 @@ import com.example.hackerton.ui.screens.find.FindScreen
 import com.example.hackerton.ui.screens.home.HomeScreen
 import com.example.hackerton.ui.screens.login.LoginScreen
 import com.example.hackerton.ui.screens.share.ShareScreen
+// 🎯 우리가 만든 정적 튜토리얼 및 가이드 화면 임포트
+import com.example.hackerton.ui.screens.TutorialScreen
+import com.example.hackerton.ui.screens.DetailShareScreen
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun AppNavHost(
     navController: NavHostController = rememberNavController(),
+    // 💡 팁: 지금 바로 튜토리얼 흐름을 폰에서 테스트해보고 싶다면
+    // startDestination = "tutorial" 로 변경하고 빌드하시면 앱이 바로 튜토리얼로 켜집니다!
     startDestination: String = Route.Login.path,
 ) {
     NavHost(
@@ -44,18 +49,58 @@ fun AppNavHost(
         composable(Route.Login.path) {
             LoginScreen(
                 onLoginClick = { _, _ ->
-                    navController.navigate(Route.Home.path) {
+                    // 만약 로그인 직후에 튜토리얼 화면을 먼저 강제로 보여주고 싶다면
+                    // Route.Home.path 대신 "tutorial"을 넣으시면 됩니다.
+                    navController.navigate("tutorial") {
                         popUpTo(Route.Login.path) { inclusive = true }
                     }
                 },
             )
         }
+
+        // ------------------------------------------------------------------
+        // 🔥 [새로 연결] 1. 튜토리얼 가이드 스크린 동작 구현
+        // ------------------------------------------------------------------
+        composable("tutorial") {
+            TutorialScreen(
+                onCloseTutorial = {
+                    // X 버튼 누르면 메인 홈 화면으로 이동 (백스택에서 튜토리얼 제거)
+                    navController.navigate(Route.Home.path) {
+                        popUpTo("tutorial") { inclusive = true }
+                    }
+                },
+                onNextTutorial = {
+                    // 화살표 버튼 누르면 다음 정적 가이드 화면(detail_share)으로 이동
+                    navController.navigate("detail_share")
+                }
+            )
+        }
+
+        // ------------------------------------------------------------------
+        // 🔥 [새로 연결] 2. 발굴 성공 정적 가이드 스크린 동작 구현
+        // ------------------------------------------------------------------
+        composable("detail_share") {
+            DetailShareScreen(
+                onClose = {
+                    // X 버튼 누르면 이전 가이드 화면(tutorial)으로 백스택 팝
+                    navController.popBackStack()
+                },
+                onCheck = {
+                    // V 버튼 누르면 가이드가 완료되었으므로 최종 홈 화면으로 이동
+                    navController.navigate(Route.Home.path) {
+                        popUpTo("detail_share") { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Route.Home.path) {
             HomeScreen(
                 onSongClick = { id -> navController.navigate(Route.Share.build(id)) },
                 onAddClick = { navController.navigate(Route.Find.build("")) },
             )
         }
+
         composable(
             route = Route.Share.path,
             arguments = listOf(
@@ -104,6 +149,7 @@ fun AppNavHost(
                 isLoading = detail == null && digId != null,
             )
         }
+
         composable(
             route = Route.Find.path,
             arguments = listOf(
@@ -119,6 +165,19 @@ fun AppNavHost(
                 onBack = { navController.popBackStack() },
             )
         }
+
+        composable(
+            route = Route.Detail.path,
+            arguments = listOf(
+                navArgument(Route.Detail.ARG_ITEM_ID) { type = NavType.StringType },
+            ),
+        ) { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getString(Route.Detail.ARG_ITEM_ID).orEmpty()
+            DetailScreen(
+                itemId = itemId,
+                onBack = { navController.popBackStack() },
+            )
+        }
     }
 }
 
@@ -127,12 +186,10 @@ private val SHORT_DATE_REGEX = Regex("""^\d{2}\.\d{2}\.\d{2}$""")
 
 private fun formatDiscoveryDate(raw: String?): String {
     if (raw.isNullOrBlank()) return ""
-    // 백엔드가 이미 "yy.MM.dd"로 보내면 그대로 사용 (현재 사양)
     if (SHORT_DATE_REGEX.matches(raw)) return raw
-    // 혹시 ISO 형식으로 바뀌면 파싱
     return runCatching {
         LocalDateTime.parse(raw).format(DISCOVERY_DATE_FORMAT)
     }.recoverCatching {
         java.time.LocalDate.parse(raw).format(DISCOVERY_DATE_FORMAT)
-    }.getOrDefault(raw) // 알 수 없는 포맷이면 원문 그대로 보여줌
+    }.getOrDefault(raw)
 }
